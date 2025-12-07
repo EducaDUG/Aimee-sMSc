@@ -6,7 +6,7 @@ export default async function handler(req) {
   const allowedOrigins = [
     "https://educadug.github.io",       // Your GitHub Page
     "https://mrguevaracga.github.io",   // Your other GitHub Page (optional)
-    "https://aimee-s-m-mzldiednk-diego-s-projects-f00e31fc.vercel.app", // Your Vercel App
+    "https://aimee-s-m-sc.vercel.app",  // Your NEW Vercel App
     "http://localhost:3000",            // Local testing
     "http://127.0.0.1:5500"             // VS Code Live Server
   ];
