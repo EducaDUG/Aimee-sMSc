@@ -26,7 +26,7 @@
                         },
                         earth: {
                             DEFAULT: '#78350f', // Brown
-                            light: '#f5f5dc',   // Beige
+                            light: '#fefce8',   // Light Yellow/Beige (Fixed from f5f5dc for tailwind compat)
                         },
                         gold: {
                             DEFAULT: '#fbbf24',
@@ -145,6 +145,39 @@
             color: white;
             transform: rotateY(180deg);
         }
+
+        /* Modal Overlay */
+        #research-modal {
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Floating Action Buttons Container */
+        .fab-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .action-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            background-color: #f3f4f6;
+            border-color: #15803d;
+            color: #15803d;
+        }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden">
@@ -161,32 +194,42 @@
             </div>
             
             <div class="flex flex-wrap justify-center gap-2">
-                <button onclick="switchTab('home')" id="btn-home" class="nav-item active px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Home</button>
-                <button onclick="switchTab('intro')" id="btn-intro" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Intro</button>
-                <button onclick="switchTab('methods')" id="btn-methods" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Methods</button>
-                <button onclick="switchTab('results')" id="btn-results" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Results</button>
+                <button onclick="switchTab('home')" id="btn-home" class="nav-item active px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Home</button>
+                <button onclick="switchTab('intro')" id="btn-intro" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Intro</button>
+                <button onclick="switchTab('methods')" id="btn-methods" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Methods</button>
+                <button onclick="switchTab('results')" id="btn-results" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Results</button>
                 <button onclick="switchTab('simulator')" id="btn-simulator" class="nav-item px-4 py-2 rounded-lg border-b-4 border-purple-600 bg-purple-900 text-white font-bold shadow-lg">✨ Simulator</button>
-                <button onclick="switchTab('discussion')" id="btn-discussion" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Discussion</button>
+                <button onclick="switchTab('discussion')" id="btn-discussion" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Discussion</button>
                 <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-item px-4 py-2 rounded-lg border-b-4 border-yellow-600 bg-gold-DEFAULT text-black font-bold"> <i class="fa-solid fa-bolt"></i> Quiz</button>
             </div>
         </div>
     </nav>
 
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-8 pb-32">
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 pb-32 scroll-smooth">
         
         <!-- HOME SECTION -->
         <div id="home" class="section-active max-w-5xl mx-auto">
             <div class="grid md:grid-cols-2 gap-8 items-center">
                 <div data-aos="fade-right">
-                    <div class="bg-white p-8 rounded-3xl border-b-8 border-moss-dark shadow-xl">
+                    <div class="bg-white p-8 rounded-3xl border-b-8 border-moss-dark shadow-xl" id="home-content">
                         <span class="bg-gold-DEFAULT text-black px-3 py-1 rounded-full text-sm font-bold mb-4 inline-block">MASTER OF SCIENCE</span>
                         <h2 class="text-4xl md:text-5xl font-extrabold text-moss-deep mb-4 leading-tight">
                             Canopy & Management Influences on <span class="text-moss-DEFAULT">Plant Communities</span>
                         </h2>
-                        <p class="text-lg text-gray-600 mb-6">
+                        <p class="text-lg text-gray-700 mb-6">
                             Investigating native and exotic forests in Otago, New Zealand. Can exotic pine plantations support native regeneration? What about the mosses?
                         </p>
+                        
+                        <div class="fab-container mb-6">
+                            <button onclick="speakText('home-content')" class="action-btn">
+                                <i class="fa-solid fa-volume-high text-moss-DEFAULT"></i> Read Aloud
+                            </button>
+                            <button onclick="openResearchModal('Overview of Native Regeneration in Exotic Forests')" class="action-btn">
+                                <i class="fa-solid fa-book-open text-blue-600"></i> Why This Matters?
+                            </button>
+                        </div>
+
                         <div class="flex gap-4">
                             <button onclick="switchTab('intro')" class="card-3d bg-moss-DEFAULT text-white px-8 py-4 rounded-xl font-bold text-lg w-full md:w-auto hover:bg-moss-light">
                                 Start Exploring <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -198,25 +241,25 @@
                     </div>
                 </div>
                 <div data-aos="fade-left" class="grid grid-cols-2 gap-4">
-                    <div class="bg-moss-dark text-white p-6 rounded-2xl shadow-lg transform rotate-3 hover:rotate-0 transition duration-300">
+                    <div class="bg-moss-dark text-white p-6 rounded-2xl shadow-lg transform rotate-3 hover:rotate-0 transition duration-300 border border-moss-light">
                         <i class="fa-solid fa-leaf text-4xl text-gold-DEFAULT mb-2"></i>
                         <h3 class="font-bold text-xl">151 Native Species</h3>
-                        <p class="text-sm opacity-80">Found under native canopies.</p>
+                        <p class="text-sm opacity-90">Found under native canopies.</p>
                     </div>
-                    <div class="bg-earth text-white p-6 rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition duration-300 mt-8">
-                        <i class="fa-solid fa-tree text-4xl text-green-300 mb-2"></i>
+                    <div class="bg-earth text-gray-800 p-6 rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition duration-300 mt-8 border-2 border-amber-200">
+                        <i class="fa-solid fa-tree text-4xl text-green-700 mb-2"></i>
                         <h3 class="font-bold text-xl">Transitional Forestry</h3>
-                        <p class="text-sm opacity-80">Using exotic trees as a nursery.</p>
+                        <p class="text-sm text-gray-700">Using exotic trees as a nursery.</p>
                     </div>
-                    <div class="bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 transition duration-300">
+                    <div class="bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 transition duration-300 border-2 border-gray-100">
                         <i class="fa-solid fa-magnifying-glass text-4xl text-moss-DEFAULT mb-2"></i>
                         <h3 class="font-bold text-xl">18 Plots</h3>
                         <p class="text-sm text-gray-600">Surveyed across Otago.</p>
                     </div>
-                    <div class="bg-moss-light text-moss-deep p-6 rounded-2xl shadow-lg transform rotate-2 hover:rotate-0 transition duration-300 mt-8">
+                    <div class="bg-moss-light text-moss-deep p-6 rounded-2xl shadow-lg transform rotate-2 hover:rotate-0 transition duration-300 mt-8 border-2 border-green-300">
                         <i class="fa-solid fa-water text-4xl text-white mb-2"></i>
                         <h3 class="font-bold text-xl">Bryophytes</h3>
-                        <p class="text-sm font-bold">Vital ecosystem engineers.</p>
+                        <p class="text-sm font-bold text-white">Vital ecosystem engineers.</p>
                     </div>
                 </div>
             </div>
@@ -224,44 +267,61 @@
 
         <!-- INTRODUCTION SECTION -->
         <div id="intro" class="section-hidden max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center" data-aos="fade-down">The Research Context</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-moss-deep" data-aos="fade-down">The Research Context</h2>
+                <button onclick="speakText('intro')" class="bg-white border-2 border-moss-DEFAULT text-moss-deep px-4 py-2 rounded-full font-bold shadow-sm hover:bg-moss-light hover:text-white transition">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+            </div>
             
             <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <div class="flip-card h-64 w-full" data-aos="zoom-in">
+                <!-- Card 1 -->
+                <div class="flip-card h-80 w-full" data-aos="zoom-in">
                     <div class="flip-card-inner shadow-xl rounded-2xl">
                         <div class="flip-card-front bg-white border-b-8 border-gray-200">
                             <i class="fa-solid fa-globe-americas text-5xl text-blue-500 mb-4"></i>
                             <h3 class="text-xl font-bold text-moss-deep">Global Biodiversity Loss</h3>
-                            <p class="text-gray-500 mt-2">Click to reveal details</p>
+                            <p class="text-gray-500 mt-2 text-sm">Hover to reveal details</p>
                         </div>
-                        <div class="flip-card-back border-b-8 border-black border-opacity-20">
-                            <p class="text-sm">Forests are declining globally. We need to understand how land use changes, like plantation forestry, affect biodiversity compared to native forests.</p>
+                        <div class="flip-card-back border-b-8 border-black border-opacity-20 flex flex-col justify-between">
+                            <p class="text-sm leading-relaxed">Forests are declining globally. We need to understand how land use changes, like plantation forestry, affect biodiversity compared to native forests.</p>
+                            <button onclick="event.stopPropagation(); openResearchModal('Impact of Plantation Forestry on Global Biodiversity')" class="mt-4 bg-white text-moss-deep px-4 py-2 rounded-lg font-bold text-xs hover:bg-gray-100 w-full">
+                                <i class="fa-solid fa-microscope"></i> Latest Research
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="flip-card h-64 w-full" data-aos="zoom-in" data-aos-delay="100">
+                <!-- Card 2 -->
+                <div class="flip-card h-80 w-full" data-aos="zoom-in" data-aos-delay="100">
                     <div class="flip-card-inner shadow-xl rounded-2xl">
                         <div class="flip-card-front bg-white border-b-8 border-gray-200">
                             <i class="fa-solid fa-seedling text-5xl text-moss-DEFAULT mb-4"></i>
                             <h3 class="text-xl font-bold text-moss-deep">Transitional Forestry</h3>
-                            <p class="text-gray-500 mt-2">Can exotics help?</p>
+                            <p class="text-gray-500 mt-2 text-sm">Can exotics help?</p>
                         </div>
-                        <div class="flip-card-back bg-moss-DEFAULT border-b-8 border-black border-opacity-20">
-                            <p class="text-sm">Exotic plantations might act as "nurseries" for native plants, shading out weeds and providing a microclimate for native seedlings to establish.</p>
+                        <div class="flip-card-back bg-moss-DEFAULT border-b-8 border-black border-opacity-20 flex flex-col justify-between">
+                            <p class="text-sm leading-relaxed">Exotic plantations might act as "nurseries" for native plants, shading out weeds and providing a microclimate for native seedlings to establish.</p>
+                            <button onclick="event.stopPropagation(); openResearchModal('Exotic Forests as Nurseries for Native Plants')" class="mt-4 bg-white text-moss-deep px-4 py-2 rounded-lg font-bold text-xs hover:bg-gray-100 w-full">
+                                <i class="fa-solid fa-microscope"></i> Latest Research
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="flip-card h-64 w-full" data-aos="zoom-in" data-aos-delay="200">
+                <!-- Card 3 -->
+                <div class="flip-card h-80 w-full" data-aos="zoom-in" data-aos-delay="200">
                     <div class="flip-card-inner shadow-xl rounded-2xl">
                         <div class="flip-card-front bg-white border-b-8 border-gray-200">
                             <i class="fa-solid fa-cloud-rain text-5xl text-gray-400 mb-4"></i>
                             <h3 class="text-xl font-bold text-moss-deep">Bryophytes Matter</h3>
-                            <p class="text-gray-500 mt-2">Why mosses?</p>
+                            <p class="text-gray-500 mt-2 text-sm">Why mosses?</p>
                         </div>
-                        <div class="flip-card-back bg-earth text-white border-b-8 border-black border-opacity-20">
-                            <p class="text-sm">Bryophytes (mosses/liverworts) are "ecosystem engineers". They effect soil dynamics and water retention but are often ignored in surveys.</p>
+                        <div class="flip-card-back bg-earth text-gray-800 border-b-8 border-black border-opacity-20 flex flex-col justify-between">
+                            <p class="text-sm leading-relaxed font-semibold">Bryophytes (mosses/liverworts) are "ecosystem engineers". They effect soil dynamics and water retention but are often ignored in surveys.</p>
+                            <button onclick="event.stopPropagation(); openResearchModal('Ecological Role of Bryophytes in Forests')" class="mt-4 bg-moss-deep text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-moss-dark w-full">
+                                <i class="fa-solid fa-microscope"></i> Latest Research
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -269,7 +329,7 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-gold-DEFAULT" data-aos="fade-up">
                 <h3 class="text-2xl font-bold text-moss-deep mb-4">Key Research Questions</h3>
-                <ul class="space-y-3">
+                <ul class="space-y-3 text-gray-700">
                     <li class="flex items-center gap-3">
                         <span class="bg-moss-deep text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
                         <p>Does understorey plant diversity differ between native and exotic forests?</p>
@@ -288,22 +348,30 @@
 
         <!-- METHODS SECTION -->
         <div id="methods" class="section-hidden max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Methods & Sites</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-moss-deep">Methods & Sites</h2>
+                <button onclick="speakText('methods')" class="bg-white border-2 border-moss-DEFAULT text-moss-deep px-4 py-2 rounded-full font-bold shadow-sm hover:bg-moss-light hover:text-white transition">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+            </div>
             
             <div class="flex flex-col md:flex-row gap-6">
                 <!-- Sites Column -->
                 <div class="w-full md:w-1/2 space-y-4">
-                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT">
-                        <h3 class="font-bold text-lg"><i class="fa-solid fa-map-pin mr-2 text-red-500"></i>The Rule of 300m</h3>
-                        <p class="text-sm text-gray-600">To ensure fair comparison, every exotic forest plot chosen was within 300 meters of a native seed source.</p>
+                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT" data-aos="fade-right">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-map-pin mr-2 text-red-500"></i>The Rule of 300m</h3>
+                            <button onclick="openResearchModal('Seed Dispersal Distance in Forests')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-600"><i class="fa-solid fa-circle-info"></i> More</button>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">To ensure fair comparison, every exotic forest plot chosen was within 300 meters of a native seed source.</p>
                     </div>
                     
-                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT">
-                        <h3 class="font-bold text-lg"><i class="fa-solid fa-ruler-combined mr-2 text-blue-500"></i>Plot Design</h3>
-                        <p class="text-sm text-gray-600">18 plots (125m x 60m). Inside each plot, 30 quadrats (0.5m x 0.5m) were randomly placed to count every plant.</p>
+                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT" data-aos="fade-right" data-aos-delay="100">
+                        <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-ruler-combined mr-2 text-blue-500"></i>Plot Design</h3>
+                        <p class="text-sm text-gray-600 mt-2">18 plots (125m x 60m). Inside each plot, 30 quadrats (0.5m x 0.5m) were randomly placed to count every plant.</p>
                     </div>
 
-                    <div class="bg-moss-deep text-white p-6 rounded-xl shadow-xl mt-4">
+                    <div class="bg-moss-deep text-white p-6 rounded-xl shadow-xl mt-4" data-aos="fade-up">
                         <h3 class="font-bold text-xl mb-4 text-gold-DEFAULT">Study Sites in Otago</h3>
                         <ul class="space-y-2 text-sm">
                             <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Orokonui:</strong> Eucalypts vs Kānuka</li>
@@ -319,10 +387,10 @@
 
                 <!-- Analysis Column -->
                 <div class="w-full md:w-1/2 bg-white rounded-2xl shadow-xl p-6 border-b-8 border-earth">
-                    <h3 class="font-bold text-xl text-earth mb-4">What was measured?</h3>
+                    <h3 class="font-bold text-xl text-earth-dark mb-4 text-gray-800">What was measured?</h3>
                     
                     <div class="space-y-4">
-                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer border border-gray-200">
                             <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
                                 <span>🌿 Vascular Plants</span>
                                 <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
@@ -330,15 +398,16 @@
                             <p class="text-sm text-gray-600 mt-2">All ferns, grasses, shrubs, and trees were identified and counted. Classified as Native or Exotic.</p>
                         </details>
 
-                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer border border-gray-200">
                             <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
                                 <span>💧 Non-Vascular (Bryophytes)</span>
                                 <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
                             </summary>
                             <p class="text-sm text-gray-600 mt-2">Mosses and Liverworts identified under microscope. Substrate noted (Soil, Rock, Dead Wood, Live Bark).</p>
+                            <button onclick="openResearchModal('Bryophyte Identification Techniques')" class="mt-2 text-xs text-blue-500 hover:underline">Learn about methodology</button>
                         </details>
 
-                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer border border-gray-200">
                             <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
                                 <span>🧪 Soil & Environment</span>
                                 <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
@@ -352,12 +421,17 @@
 
         <!-- RESULTS SECTION -->
         <div id="results" class="section-hidden max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Key Findings</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-moss-deep">Key Findings</h2>
+                <button onclick="speakText('results')" class="bg-white border-2 border-moss-DEFAULT text-moss-deep px-4 py-2 rounded-full font-bold shadow-sm hover:bg-moss-light hover:text-white transition">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+            </div>
 
             <div class="grid md:grid-cols-2 gap-8 mb-10">
                 <!-- Finding 1 -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-moss-DEFAULT" data-aos="flip-up">
-                    <h3 class="text-xl font-bold mb-3">1. Total Diversity Surprise</h3>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">1. Total Diversity Surprise</h3>
                     <p class="text-gray-600 mb-4">Contrary to expectations, there was <strong>no significant difference</strong> in total species richness between Native and Exotic canopies.</p>
                     <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
                         <div class="bg-moss-DEFAULT h-4 rounded-full" style="width: 50%"></div>
@@ -366,22 +440,23 @@
                         <span>Native Canopy</span>
                         <span>Exotic Canopy (Equal)</span>
                     </div>
+                    <button onclick="openResearchModal('Native vs Exotic Forest Biodiversity Comparison')" class="mt-4 text-sm text-moss-DEFAULT font-bold hover:underline"><i class="fa-solid fa-plus"></i> Why is this surprising?</button>
                 </div>
 
                 <!-- Finding 2 -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-gold-DEFAULT" data-aos="flip-up" data-aos-delay="100">
-                    <h3 class="text-xl font-bold mb-3">2. Native vs Exotic Plants</h3>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">2. Native vs Exotic Plants</h3>
                     <p class="text-gray-600 mb-4">However, Native canopies supported significantly more <strong>Native vascular plants</strong> than exotic canopies did.</p>
                     <div class="flex items-end gap-2 h-20 mt-4">
                         <div class="bg-moss-deep w-1/2 rounded-t-lg flex items-center justify-center text-white font-bold h-full">Native Canopy</div>
                         <div class="bg-moss-light w-1/2 rounded-t-lg flex items-center justify-center text-white font-bold h-3/5">Exotic Canopy</div>
                     </div>
-                    <p class="text-center text-xs mt-1">Native Plant Richness</p>
+                    <p class="text-center text-xs mt-1 text-gray-600">Native Plant Richness</p>
                 </div>
             </div>
 
             <!-- Management & Sodium -->
-            <div class="bg-moss-deep text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div class="bg-moss-deep text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden" data-aos="zoom-in-up">
                 <div class="absolute top-0 right-0 opacity-10">
                     <i class="fa-solid fa-tractor text-9xl"></i>
                 </div>
@@ -391,20 +466,21 @@
                 <div class="grid md:grid-cols-2 gap-8">
                     <div>
                         <h4 class="font-bold text-lg mb-2"><i class="fa-solid fa-scissors mr-2"></i>Intermittent vs Continuous</h4>
-                        <p class="text-sm opacity-90 mb-4">
+                        <p class="text-sm opacity-90 mb-4 leading-relaxed">
                             <strong>Intermittent Management</strong> (Harsh but rare, e.g., clear-felling every 30 years) actually supported HIGHER diversity than <strong>Continuous Management</strong> (regular low-intensity weeding/trapping).
                         </p>
                         <p class="text-xs italic bg-white/10 p-2 rounded">Why? Intermittent disturbance mimics natural events and leaves Coarse Woody Debris (logs) which mosses love!</p>
+                        <button onclick="openResearchModal('Intermediate Disturbance Hypothesis in Forests')" class="mt-3 bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-xs font-bold transition">Explore Disturbance Theory</button>
                     </div>
                     
                     <div>
                         <h4 class="font-bold text-lg mb-2"><i class="fa-solid fa-flask mr-2"></i>The Sodium Problem</h4>
-                        <p class="text-sm opacity-90 mb-4">
+                        <p class="text-sm opacity-90 mb-4 leading-relaxed">
                             High levels of soil <strong>Sodium (Na+)</strong> were found to decrease Moss diversity. Vascular plants didn't mind, but mosses are sensitive!
                         </p>
-                        <div class="flex items-center gap-2 mt-2">
+                        <div class="flex items-center gap-2 mt-2 bg-black/20 p-2 rounded-lg">
                             <span class="text-red-400 font-bold">Na+ ↑</span>
-                            <span class="h-0.5 w-10 bg-white"></span>
+                            <span class="h-0.5 flex-1 bg-white"></span>
                             <span class="text-green-400 font-bold">Mosses ↓</span>
                         </div>
                     </div>
@@ -424,7 +500,7 @@
                 <div class="md:col-span-1 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-purple-500">
                         <label class="block font-bold text-gray-700 mb-2">Canopy Type</label>
-                        <select id="sim-canopy" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none">
+                        <select id="sim-canopy" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none bg-white text-gray-800">
                             <option value="Native (e.g. Kānuka)">Native (e.g. Kānuka)</option>
                             <option value="Exotic (e.g. Pinus radiata)">Exotic (e.g. Pinus radiata)</option>
                             <option value="Exotic (e.g. Eucalyptus)">Exotic (e.g. Eucalyptus)</option>
@@ -433,7 +509,7 @@
 
                     <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-blue-500">
                         <label class="block font-bold text-gray-700 mb-2">Management Style</label>
-                        <select id="sim-management" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none">
+                        <select id="sim-management" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none bg-white text-gray-800">
                             <option value="Intermittent (High disturbance, rare)">Intermittent (Logging)</option>
                             <option value="Continuous (Low disturbance, frequent)">Continuous (Weeding)</option>
                             <option value="None (Natural)">None (Natural)</option>
@@ -442,7 +518,7 @@
 
                     <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-red-500">
                         <label class="block font-bold text-gray-700 mb-2">Soil Sodium (Na+)</label>
-                        <select id="sim-sodium" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-red-500 focus:outline-none">
+                        <select id="sim-sodium" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-red-500 focus:outline-none bg-white text-gray-800">
                             <option value="Low">Low Sodium</option>
                             <option value="High">High Sodium</option>
                         </select>
@@ -465,26 +541,33 @@
 
         <!-- DISCUSSION SECTION -->
         <div id="discussion" class="section-hidden max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Discussion & Implications</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-moss-deep">Discussion & Implications</h2>
+                <button onclick="speakText('discussion')" class="bg-white border-2 border-moss-DEFAULT text-moss-deep px-4 py-2 rounded-full font-bold shadow-sm hover:bg-moss-light hover:text-white transition">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+            </div>
             
             <div class="grid md:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold text-earth mb-2">Transitional Forestry</h3>
-                    <p class="text-gray-700">
+                <div class="bg-white p-6 rounded-2xl shadow-lg" data-aos="fade-up">
+                    <h3 class="text-xl font-bold text-earth-DEFAULT mb-2">Transitional Forestry</h3>
+                    <p class="text-gray-700 leading-relaxed">
                         Since exotic forests can support native regeneration (if near a seed source), they can be used as a "nursery". We can transition these pine blocks into native forests slowly, rather than cutting them all down at once. This maintains habitat for the mosses and ferns that have established there.
                     </p>
+                    <button onclick="openResearchModal('Succession in Transitional Forestry')" class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg transition"><i class="fa-solid fa-book mr-2"></i> Read Related Studies</button>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold text-earth mb-2">Indicator Species</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                    <h3 class="text-xl font-bold text-earth-DEFAULT mb-2">Indicator Species</h3>
                     <p class="text-gray-700">
                         Three native species were identified as strong indicators of Native Forest conditions:
                     </p>
-                    <ul class="mt-2 space-y-1 text-sm font-semibold text-moss-DEFAULT">
-                        <li>1. Blechnum procerum (Fern)</li>
-                        <li>2. Pseudopanax colensoi (Tree)</li>
-                        <li>3. Coprosma dumosa (Shrub)</li>
+                    <ul class="mt-2 space-y-2 text-sm font-semibold text-moss-DEFAULT">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check"></i> 1. Blechnum procerum (Fern)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check"></i> 2. Pseudopanax colensoi (Tree)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check"></i> 3. Coprosma dumosa (Shrub)</li>
                     </ul>
+                    <button onclick="openResearchModal('Bio-indicators in Forest Ecosystems')" class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg transition"><i class="fa-solid fa-book mr-2"></i> Why use indicators?</button>
                 </div>
             </div>
         </div>
@@ -520,6 +603,29 @@
 
     </main>
 
+    <!-- RESEARCH MODAL -->
+    <div id="research-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
+            <button onclick="closeResearchModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="modal-title" class="text-2xl font-bold text-moss-deep mb-4 pr-8 border-b pb-2">Topic Analysis</h3>
+            
+            <div id="modal-content" class="overflow-y-auto pr-2 flex-1 prose prose-sm max-w-none text-gray-700">
+                <!-- AI Content loads here -->
+                <div class="flex flex-col items-center justify-center h-40">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-moss-DEFAULT mb-4"></i>
+                    <p class="text-gray-500">Searching academic database...</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t flex justify-end">
+                <button onclick="speakText('modal-content')" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 mr-2"><i class="fa-solid fa-volume-high"></i> Listen</button>
+                <button onclick="closeResearchModal()" class="bg-moss-DEFAULT text-white px-6 py-2 rounded-lg font-bold hover:bg-moss-dark">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Chat Widget -->
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         <!-- Chat Box -->
@@ -534,7 +640,7 @@
                 </div>
             </div>
             <div class="p-2 bg-gray-100 flex gap-2">
-                <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-2 rounded-lg border focus:outline-none focus:border-moss-DEFAULT" onkeypress="handleEnter(event)">
+                <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-2 rounded-lg border focus:outline-none focus:border-moss-DEFAULT text-black" onkeypress="handleEnter(event)">
                 <button onclick="sendMessage()" class="bg-moss-DEFAULT text-white p-2 rounded-lg hover:bg-moss-dark"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -574,11 +680,26 @@
             chatBox.classList.toggle('hidden');
         }
 
+        // --- SPEECH SYNTHESIS LOGIC ---
+        function speakText(elementId) {
+            // Cancel any current speech
+            window.speechSynthesis.cancel();
+
+            const text = document.getElementById(elementId).innerText;
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Optional: Set voice/rate
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
         const API_BASE = "https://YOUR-VERCEL-APP.vercel.app"; // PLACEHOLDER - USER TO REPLACE
 
         async function callGemini(prompt) {
             if (API_BASE.includes("YOUR-VERCEL-APP")) {
-                throw new Error("⚠️ API_BASE not set. See setup instructions.");
+                throw new Error("⚠️ API_BASE not set. See setup instructions at bottom of file.");
             }
             try {
                 const response = await fetch(`${API_BASE}/api/ask`, {
@@ -603,7 +724,7 @@
             if (!userText) return;
 
             // Add User Message
-            msgs.innerHTML += `<div class="chat-msg bg-white border border-gray-200 p-2 rounded-lg text-sm self-end ml-auto w-3/4 mb-2 shadow-sm text-right">${userText}</div>`;
+            msgs.innerHTML += `<div class="chat-msg bg-white border border-gray-200 p-2 rounded-lg text-sm self-end ml-auto w-3/4 mb-2 shadow-sm text-right text-gray-800">${userText}</div>`;
             input.value = '';
             msgs.scrollTop = msgs.scrollHeight;
 
@@ -635,6 +756,56 @@
 
         function handleEnter(e) {
             if (e.key === 'Enter') sendMessage();
+        }
+
+        // --- RESEARCH MODAL LOGIC ---
+        function openResearchModal(topic) {
+            const modal = document.getElementById('research-modal');
+            const content = document.getElementById('modal-content');
+            const title = document.getElementById('modal-title');
+            
+            title.innerText = "Deep Dive: " + topic;
+            modal.classList.remove('hidden');
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-40">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-moss-DEFAULT mb-4"></i>
+                    <p class="text-gray-500">Consulting academic database...</p>
+                </div>
+            `;
+
+            fetchExplanation(topic);
+        }
+
+        function closeResearchModal() {
+            document.getElementById('research-modal').classList.add('hidden');
+            window.speechSynthesis.cancel(); // Stop reading if closed
+        }
+
+        async function fetchExplanation(topic) {
+            const prompt = `
+                Topic: ${topic}
+                Context: Aimee Pritchard's thesis on Forest Ecology.
+                
+                Task:
+                1. Explain this concept in depth (2 paragraphs) in the context of forest ecology and management.
+                2. Provide 3 specific citations of OTHER RELEVANT research papers (Authors, Year) that support or contrast with this topic.
+                3. Keep the tone academic but accessible.
+                
+                Format as Markdown with bold headings.
+            `;
+
+            try {
+                const text = await callGemini(prompt);
+                document.getElementById('modal-content').innerHTML = marked.parse(text);
+            } catch (e) {
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="text-center text-red-500 p-4">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i><br>
+                        Could not fetch research data.<br>
+                        <span class="text-sm text-gray-500">${e.message}</span>
+                    </div>
+                `;
+            }
         }
 
         // --- FOREST FORECASTER LOGIC ---
@@ -672,7 +843,7 @@
 
             try {
                 const prediction = await callGemini(prompt);
-                outputDiv.innerHTML = `<div class="prose prose-sm w-full max-w-none text-left">${marked.parse(prediction)}</div>`;
+                outputDiv.innerHTML = `<div class="prose prose-sm w-full max-w-none text-left text-gray-800">${marked.parse(prediction)}</div>`;
                 outputDiv.classList.remove('border-dashed', 'border-gray-300', 'border-red-500');
                 outputDiv.classList.add('border-purple-200');
             } catch (e) {
@@ -722,7 +893,7 @@
 
                 quizData.options.forEach((opt, index) => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-gray-100 hover:bg-gray-200 p-4 rounded-xl text-left border-2 border-transparent transition-all";
+                    btn.className = "bg-gray-100 hover:bg-gray-200 p-4 rounded-xl text-left border-2 border-transparent transition-all text-gray-800 font-medium";
                     btn.innerText = opt;
                     btn.onclick = () => checkAnswer(index, quizData.correctIndex, quizData.explanation, btn);
                     optionsEl.appendChild(btn);
