@@ -1,1356 +1,874 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Bryology Thesis Explorer – Science with Diego</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Canopy & Plant Communities | MSc Thesis</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Config for Moss Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        moss: {
+                            light: '#4ade80',
+                            DEFAULT: '#15803d', // Primary Green
+                            dark: '#14532d',    // Dark Green
+                            deep: '#052e16',    // Very Dark Green
+                        },
+                        earth: {
+                            DEFAULT: '#78350f', // Brown
+                            light: '#f5f5dc',   // Beige
+                        },
+                        gold: {
+                            DEFAULT: '#fbbf24',
+                            dark: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-  <!-- Font Awesome -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+    <style>
+        /* 3D Gamified Styles */
+        body {
+            background-color: #f0fdf4; /* Very light green tint */
+            background-image: radial-gradient(#dcfce7 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
 
-  <!-- AOS (Animate On Scroll) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
-  />
+        .card-3d {
+            transition: all 0.1s;
+            border-bottom: 6px solid rgba(0,0,0,0.2);
+            transform: translateY(0);
+        }
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        .card-3d:active {
+            transform: translateY(4px);
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+        }
 
-  <!-- Marked.js -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-  <style>
-    :root {
-      --deep-red: #990000;
-      --dark-red: #7a0000;
-      --gold: #ffc107;
-      --bg-soft: #f5f5f7;
-    }
+        .nav-item.active {
+            background-color: #fbbf24;
+            color: #052e16;
+            font-weight: bold;
+            transform: scale(1.05);
+            box-shadow: 0 4px 0 #d97706;
+        }
 
-    body {
-      background:
-        radial-gradient(circle at top left, rgba(153, 0, 0, 0.08), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(255, 193, 7, 0.12), transparent 55%),
-        var(--bg-soft);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+        .nav-item:hover:not(.active) {
+            background-color: #15803d;
+            transform: translateY(-2px);
+        }
 
-    .nav-tab {
-      border-radius: 9999px;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        .section-hidden {
+            display: none;
+        }
 
-    .nav-tab.active {
-      background: linear-gradient(135deg, var(--deep-red), var(--dark-red));
-      color: #fff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
-      transform: translateY(-1px);
-    }
+        .section-active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
 
-    .nav-tab:not(.active):hover {
-      background: rgba(255, 255, 255, 0.7);
-      transform: translateY(-1px);
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .card-3d {
-      background: white;
-      border-radius: 1.5rem;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
-      transform: translateY(0) translateZ(0);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-      position: relative;
-      overflow: hidden;
-    }
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #dcfce7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #15803d;
+            border-radius: 5px;
+        }
 
-    .card-3d:hover {
-      transform: translateY(-6px) translateZ(0);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
-      border-color: rgba(255, 193, 7, 0.7);
-    }
+        .chat-msg {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    /* Flip Cards */
-    .flip-card {
-      background-color: transparent;
-      width: 100%;
-      height: 180px;
-      perspective: 1000px;
-    }
-
-    .flip-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-      border-radius: 1.25rem;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-      cursor: pointer;
-    }
-
-    .flip-card:hover .flip-inner {
-      transform: rotateY(180deg);
-    }
-
-    .flip-front, .flip-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      border-radius: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    .flip-front {
-      background: linear-gradient(135deg, rgba(153, 0, 0, 0.95), rgba(122, 0, 0, 0.95));
-      color: white;
-    }
-
-    .flip-back {
-      background: white;
-      color: #111827;
-      transform: rotateY(180deg);
-      border: 1px solid rgba(148, 163, 184, 0.5);
-    }
-
-    /* Accordions */
-    .accordion-header {
-      cursor: pointer;
-      transition: background 0.15s ease, transform 0.15s ease;
-    }
-
-    .accordion-header:hover {
-      background: rgba(148, 163, 184, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .accordion-body {
-      display: none;
-    }
-
-    .accordion-body.open {
-      display: block;
-    }
-
-    /* Chatbot Widget */
-    #chatWidgetToggle {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      z-index: 50;
-    }
-
-    #chatWidgetPanel {
-      position: fixed;
-      bottom: 5.2rem;
-      right: 1.5rem;
-      width: 340px;
-      max-height: 520px;
-      border-radius: 1.5rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      background: white;
-      display: none;
-      z-index: 50;
-    }
-
-    #chatWidgetPanel.open {
-      display: flex;
-    }
-
-    .chat-bubble {
-      border-radius: 1.2rem;
-      padding: 0.55rem 0.8rem;
-      font-size: 0.9rem;
-      margin-bottom: 0.35rem;
-      max-width: 90%;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-
-    .chat-bubble.user {
-      background: #fee2e2;
-      align-self: flex-end;
-    }
-
-    .chat-bubble.bot {
-      background: #f3f4ff;
-      align-self: flex-start;
-    }
-
-    /* Quick Fire MCQ */
-    .mcq-option {
-      border-radius: 9999px;
-      padding: 0.5rem 0.9rem;
-      border: 1px solid #e5e7eb;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.15s ease;
-    }
-
-    .mcq-option:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .mcq-option.correct {
-      background: #dcfce7;
-      border-color: #16a34a;
-    }
-
-    .mcq-option.incorrect {
-      background: #fee2e2;
-      border-color: #b91c1c;
-    }
-  </style>
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 1rem;
+        }
+        .flip-card-back {
+            background-color: #14532d;
+            color: white;
+            transform: rotateY(180deg);
+        }
+    </style>
 </head>
-<body class="min-h-screen text-slate-900">
-  <div class="max-w-6xl mx-auto px-4 md:px-6 pb-24 pt-6">
-    <!-- Nav -->
-    <nav class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-[var(--deep-red)] to-[var(--gold)] flex items-center justify-center shadow-lg">
-          <i class="fa-solid fa-seedling text-white text-xl"></i>
+<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Navigation -->
+    <nav class="bg-moss-deep text-white p-4 shadow-lg z-50">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-tree text-gold-DEFAULT text-2xl animate-bounce"></i>
+                <div>
+                    <h1 class="text-xl font-bold font-mono tracking-tighter">ECO-FOREST THESIS</h1>
+                    <p class="text-xs text-green-300">By Aimee Pritchard | Otago University</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="switchTab('home')" id="btn-home" class="nav-item active px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Home</button>
+                <button onclick="switchTab('intro')" id="btn-intro" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Intro</button>
+                <button onclick="switchTab('methods')" id="btn-methods" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Methods</button>
+                <button onclick="switchTab('results')" id="btn-results" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Results</button>
+                <button onclick="switchTab('simulator')" id="btn-simulator" class="nav-item px-4 py-2 rounded-lg border-b-4 border-purple-600 bg-purple-900 text-white font-bold shadow-lg">✨ Simulator</button>
+                <button onclick="switchTab('discussion')" id="btn-discussion" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark">Discussion</button>
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-item px-4 py-2 rounded-lg border-b-4 border-yellow-600 bg-gold-DEFAULT text-black font-bold"> <i class="fa-solid fa-bolt"></i> Quiz</button>
+            </div>
         </div>
-        <div>
-          <h1 class="text-xl font-bold text-slate-900 tracking-tight">
-            Science with Diego – Bryology Thesis
-          </h1>
-          <p class="text-xs text-slate-500">
-            Turning a Master’s thesis about mosses into bite-sized science for teens.
-          </p>
-        </div>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button class="nav-tab active" data-tab="homeTab">
-          <i class="fa-solid fa-house-chimney mr-1.5"></i> Home
-        </button>
-        <button class="nav-tab" data-tab="biologyTab">
-          <i class="fa-solid fa-dna mr-1.5"></i> Biology
-        </button>
-        <button class="nav-tab" data-tab="chemistryTab">
-          <i class="fa-solid fa-flask mr-1.5"></i> Chemistry
-        </button>
-        <button class="nav-tab" data-tab="physicsTab">
-          <i class="fa-solid fa-atom mr-1.5"></i> Physics
-        </button>
-        <button class="nav-tab" data-tab="quickfireTab">
-          <i class="fa-solid fa-bolt mr-1.5"></i> Quick Fire
-        </button>
-      </div>
     </nav>
 
-    <!-- HOME TAB -->
-    <section id="homeTab" class="tab-panel active">
-      <div class="grid md:grid-cols-[3fr,2fr] gap-6 items-stretch">
-        <div class="card-3d p-6 md:p-8" data-aos="fade-right">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-medium mb-4">
-            <i class="fa-solid fa-microscope"></i>
-            <span>Master’s Thesis → School Science</span>
-          </div>
-          <h2 class="text-3xl md:text-4xl font-extrabold mb-3 text-slate-900">
-            Bryology Thesis Explorer 🌿
-          </h2>
-          <p class="text-sm md:text-base text-slate-600 mb-4">
-            This revision hub translates a Master’s thesis on <span class="font-semibold">bryophytes</span>
-            (mosses and their relatives) into simple, exam-style science for 13–16-year-olds.
-          </p>
-          <ol class="space-y-2 text-sm text-slate-700 mb-5 list-decimal list-inside">
-            <li><span class="font-semibold">Pick a tab</span> – Biology for the moss story, Chemistry for water & pH, Physics for light & energy.</li>
-            <li><span class="font-semibold">Flip the cards</span> to learn key terms from the thesis.</li>
-            <li><span class="font-semibold">Open the accordions</span> for step-by-step processes and methods.</li>
-            <li><span class="font-semibold">Use Quick Fire</span> to quiz yourself or let AI create a mystery question.</li>
-          </ol>
-          <div class="flex flex-wrap gap-3 items-center">
-            <button
-              onclick="openChatWidget()"
-              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] shadow-lg shadow-red-900/30 hover:shadow-xl hover:translate-y-[-1px] transition"
-            >
-              <i class="fa-solid fa-robot"></i>
-              Ask Bryologist Bot
-            </button>
-            <button
-              onclick="scrollToSection('quickfireTab')"
-              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold bg-white/80 border border-slate-200 hover:bg-white shadow-md"
-            >
-              <i class="fa-solid fa-bolt"></i>
-              Jump to Quick Fire
-            </button>
-          </div>
-          <div class="mt-6 border-t border-slate-200 pt-4 text-xs text-slate-500">
-            Tip for Diego: use the Biology tab text to mirror your thesis abstract in student-friendly language.
-          </div>
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 pb-32">
+        
+        <!-- HOME SECTION -->
+        <div id="home" class="section-active max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div data-aos="fade-right">
+                    <div class="bg-white p-8 rounded-3xl border-b-8 border-moss-dark shadow-xl">
+                        <span class="bg-gold-DEFAULT text-black px-3 py-1 rounded-full text-sm font-bold mb-4 inline-block">MASTER OF SCIENCE</span>
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-moss-deep mb-4 leading-tight">
+                            Canopy & Management Influences on <span class="text-moss-DEFAULT">Plant Communities</span>
+                        </h2>
+                        <p class="text-lg text-gray-600 mb-6">
+                            Investigating native and exotic forests in Otago, New Zealand. Can exotic pine plantations support native regeneration? What about the mosses?
+                        </p>
+                        <div class="flex gap-4">
+                            <button onclick="switchTab('intro')" class="card-3d bg-moss-DEFAULT text-white px-8 py-4 rounded-xl font-bold text-lg w-full md:w-auto hover:bg-moss-light">
+                                Start Exploring <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </button>
+                            <button onclick="toggleChat()" class="card-3d bg-white text-moss-deep border-2 border-moss-deep px-6 py-4 rounded-xl font-bold w-full md:w-auto hover:bg-green-50">
+                                Ask AI Bot <i class="fa-solid fa-robot ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="fade-left" class="grid grid-cols-2 gap-4">
+                    <div class="bg-moss-dark text-white p-6 rounded-2xl shadow-lg transform rotate-3 hover:rotate-0 transition duration-300">
+                        <i class="fa-solid fa-leaf text-4xl text-gold-DEFAULT mb-2"></i>
+                        <h3 class="font-bold text-xl">151 Native Species</h3>
+                        <p class="text-sm opacity-80">Found under native canopies.</p>
+                    </div>
+                    <div class="bg-earth text-white p-6 rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition duration-300 mt-8">
+                        <i class="fa-solid fa-tree text-4xl text-green-300 mb-2"></i>
+                        <h3 class="font-bold text-xl">Transitional Forestry</h3>
+                        <p class="text-sm opacity-80">Using exotic trees as a nursery.</p>
+                    </div>
+                    <div class="bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 transition duration-300">
+                        <i class="fa-solid fa-magnifying-glass text-4xl text-moss-DEFAULT mb-2"></i>
+                        <h3 class="font-bold text-xl">18 Plots</h3>
+                        <p class="text-sm text-gray-600">Surveyed across Otago.</p>
+                    </div>
+                    <div class="bg-moss-light text-moss-deep p-6 rounded-2xl shadow-lg transform rotate-2 hover:rotate-0 transition duration-300 mt-8">
+                        <i class="fa-solid fa-water text-4xl text-white mb-2"></i>
+                        <h3 class="font-bold text-xl">Bryophytes</h3>
+                        <p class="text-sm font-bold">Vital ecosystem engineers.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="grid gap-4" data-aos="fade-left">
-          <button
-            onclick="showTab('biologyTab')"
-            class="card-3d p-4 flex flex-col items-start text-left bg-gradient-to-br from-white to-amber-50"
-          >
-            <div class="flex items-center justify-between w-full mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">Biology</span>
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-amber-100">
-                <i class="fa-solid fa-seedling text-amber-700"></i>
-              </span>
-            </div>
-            <h3 class="font-bold text-slate-900 mb-1">Bryophyte Basics</h3>
-            <p class="text-xs text-slate-600">
-              What mosses are, how they live, and why your thesis cares about them.
-            </p>
-          </button>
-
-          <button
-            onclick="showTab('chemistryTab')"
-            class="card-3d p-4 flex flex-col items-start text-left"
-          >
-            <div class="flex items-center justify-between w-full mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">Chemistry</span>
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-sky-100">
-                <i class="fa-solid fa-flask text-sky-700"></i>
-              </span>
-            </div>
-            <h3 class="font-bold text-slate-900 mb-1">Water, Acidity & Nutrients</h3>
-            <p class="text-xs text-slate-600">
-              Explore pH, dissolved ions, and how they affect moss health in the thesis.
-            </p>
-          </button>
-
-          <button
-            onclick="showTab('physicsTab')"
-            class="card-3d p-4 flex flex-col items-start text-left"
-          >
-            <div class="flex items-center justify-between w-full mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">Physics</span>
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-indigo-100">
-                <i class="fa-solid fa-sun text-indigo-700"></i>
-              </span>
-            </div>
-            <h3 class="font-bold text-slate-900 mb-1">Light & Microclimate</h3>
-            <p class="text-xs text-slate-600">
-              Link light, temperature, and moisture to bryophyte growth and patterns.
-            </p>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- BIOLOGY TAB -->
-    <section id="biologyTab" class="tab-panel">
-      <div class="grid md:grid-cols-[3fr,2fr] gap-6 mt-4">
-        <!-- Left: content -->
-        <div class="space-y-4">
-          <div class="card-3d p-5 md:p-6" data-aos="fade-up">
-            <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-2">
-              The Thesis Story: Life in the Moss World 🌿
-            </h2>
-            <p class="text-sm text-slate-700 mb-1">
-              Your Master’s thesis explores <span class="font-semibold">bryophytes</span> – tiny, non-vascular plants like mosses and liverworts – as clues about their
-              environment. They don’t have true roots or flowers, but they are <span class="font-semibold">excellent bio-indicators</span>:
-            </p>
-            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
-              <li>They absorb water and nutrients directly over their surfaces.</li>
-              <li>They react quickly when water, light, or pollution levels change.</li>
-              <li>They can show patterns of <span class="font-semibold">microclimate</span> and <span class="font-semibold">air quality</span> over time.</li>
-            </ul>
-            <p class="text-sm text-slate-700 mt-2">
-              Replace these bullet points with the <span class="font-semibold">exact aims</span> of your thesis (e.g. “to see how moss cover changes
-              with air pollution in urban parks”).
-            </p>
-          </div>
-
-          <!-- Flip cards -->
-          <div class="grid sm:grid-cols-2 gap-4" data-aos="fade-up">
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">Bryophyte</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
+        <!-- INTRODUCTION SECTION -->
+        <div id="intro" class="section-hidden max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center" data-aos="fade-down">The Research Context</h2>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="flip-card h-64 w-full" data-aos="zoom-in">
+                    <div class="flip-card-inner shadow-xl rounded-2xl">
+                        <div class="flip-card-front bg-white border-b-8 border-gray-200">
+                            <i class="fa-solid fa-globe-americas text-5xl text-blue-500 mb-4"></i>
+                            <h3 class="text-xl font-bold text-moss-deep">Global Biodiversity Loss</h3>
+                            <p class="text-gray-500 mt-2">Click to reveal details</p>
+                        </div>
+                        <div class="flip-card-back border-b-8 border-black border-opacity-20">
+                            <p class="text-sm">Forests are declining globally. We need to understand how land use changes, like plantation forestry, affect biodiversity compared to native forests.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    Group of simple, non-vascular plants, including mosses, liverworts, and hornworts. No true roots, stems, or leaves.
-                  </p>
+
+                <div class="flip-card h-64 w-full" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="flip-card-inner shadow-xl rounded-2xl">
+                        <div class="flip-card-front bg-white border-b-8 border-gray-200">
+                            <i class="fa-solid fa-seedling text-5xl text-moss-DEFAULT mb-4"></i>
+                            <h3 class="text-xl font-bold text-moss-deep">Transitional Forestry</h3>
+                            <p class="text-gray-500 mt-2">Can exotics help?</p>
+                        </div>
+                        <div class="flip-card-back bg-moss-DEFAULT border-b-8 border-black border-opacity-20">
+                            <p class="text-sm">Exotic plantations might act as "nurseries" for native plants, shading out weeds and providing a microclimate for native seedlings to establish.</p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+
+                <div class="flip-card h-64 w-full" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="flip-card-inner shadow-xl rounded-2xl">
+                        <div class="flip-card-front bg-white border-b-8 border-gray-200">
+                            <i class="fa-solid fa-cloud-rain text-5xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-bold text-moss-deep">Bryophytes Matter</h3>
+                            <p class="text-gray-500 mt-2">Why mosses?</p>
+                        </div>
+                        <div class="flip-card-back bg-earth text-white border-b-8 border-black border-opacity-20">
+                            <p class="text-sm">Bryophytes (mosses/liverworts) are "ecosystem engineers". They effect soil dynamics and water retention but are often ignored in surveys.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">Gametophyte</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
-                </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    The “main moss plant” you see – the haploid, green stage that makes gametes (sperm and eggs).
-                  </p>
-                </div>
-              </div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-gold-DEFAULT" data-aos="fade-up">
+                <h3 class="text-2xl font-bold text-moss-deep mb-4">Key Research Questions</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center gap-3">
+                        <span class="bg-moss-deep text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+                        <p>Does understorey plant diversity differ between native and exotic forests?</p>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="bg-moss-deep text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+                        <p>Is there a correlation between bryophyte and vascular plant diversity?</p>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="bg-moss-deep text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+                        <p>Does silvicultural management (disturbance) impact diversity?</p>
+                    </li>
+                </ul>
             </div>
-
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">Sporophyte</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
-                </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    A stalk and capsule growing from the gametophyte. Produces spores for dispersal; depends on the gametophyte for food.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">Bio-indicator</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
-                </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    A living organism that shows how healthy an environment is. Changes in mosses can signal pollution or climate shifts.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Biology process accordions -->
-          <div class="card-3d p-5 space-y-3" data-aos="fade-up">
-            <h3 class="font-semibold text-lg text-slate-900">
-              Key Processes from the Thesis
-            </h3>
-
-            <div class="border border-slate-200 rounded-2xl overflow-hidden">
-              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
-                <span class="text-sm font-semibold text-slate-800">1. Bryophyte life cycle (simplified)</span>
-                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
-              </button>
-              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
-                <ol class="list-decimal list-inside space-y-1">
-                  <li>Spores are released from the capsule of the sporophyte.</li>
-                  <li>Each spore can grow into a young gametophyte plant in a damp place.</li>
-                  <li>The gametophyte makes sperm and eggs in tiny structures.</li>
-                  <li>Water allows sperm to swim to the egg and fertilise it.</li>
-                  <li>A new sporophyte grows out of the gametophyte, and the cycle continues.</li>
-                </ol>
-              </div>
-            </div>
-
-            <div class="border border-slate-200 rounded-2xl overflow-hidden">
-              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
-                <span class="text-sm font-semibold text-slate-800">2. How the thesis samples moss</span>
-                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
-              </button>
-              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
-                <ol class="list-decimal list-inside space-y-1">
-                  <li>Select different sites (e.g. shady vs sunny, polluted vs clean).</li>
-                  <li>Use quadrats or transects to record moss cover and species.</li>
-                  <li>Measure microclimate (light, temperature, humidity) at each site.</li>
-                  <li>Compare patterns: where does moss thrive or struggle?</li>
-                </ol>
-                <p class="mt-1 text-xs text-slate-500">
-                  → Replace with your exact sampling design and variables.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Right: interactive -->
-        <div class="space-y-4">
-          <!-- Biology interactive chart -->
-          <div class="card-3d p-4 md:p-5" data-aos="fade-left">
-            <h3 class="font-semibold mb-1 text-slate-900">Moisture vs. Moss Health</h3>
-            <p class="text-xs text-slate-600 mb-3">
-              Move the slider to model how moss “happiness” changes with moisture, like in your thesis sites.
-            </p>
-            <input
-              id="moistureSlider"
-              type="range"
-              min="0"
-              max="100"
-              value="60"
-              class="w-full mb-2 accent-[var(--deep-red)]"
-            />
-            <div class="flex justify-between text-xs text-slate-500 mb-3">
-              <span>Dry</span><span>Medium</span><span>Soaked</span>
-            </div>
-            <p class="text-xs text-slate-700 mb-3">
-              Estimated moss health: <span id="moistureStatus" class="font-semibold text-[var(--deep-red)]">Happy</span>
-            </p>
-            <canvas id="bryophyteMoistureChart" class="mt-1"></canvas>
-          </div>
+        <!-- METHODS SECTION -->
+        <div id="methods" class="section-hidden max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Methods & Sites</h2>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Sites Column -->
+                <div class="w-full md:w-1/2 space-y-4">
+                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT">
+                        <h3 class="font-bold text-lg"><i class="fa-solid fa-map-pin mr-2 text-red-500"></i>The Rule of 300m</h3>
+                        <p class="text-sm text-gray-600">To ensure fair comparison, every exotic forest plot chosen was within 300 meters of a native seed source.</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-moss-DEFAULT">
+                        <h3 class="font-bold text-lg"><i class="fa-solid fa-ruler-combined mr-2 text-blue-500"></i>Plot Design</h3>
+                        <p class="text-sm text-gray-600">18 plots (125m x 60m). Inside each plot, 30 quadrats (0.5m x 0.5m) were randomly placed to count every plant.</p>
+                    </div>
 
-          <!-- AI Audio & Analogy -->
-          <div class="card-3d p-4 md:p-5 space-y-3" data-aos="fade-left">
-            <h3 class="font-semibold text-slate-900">
-              AI Help: Bryology Audio & Analogies
-            </h3>
-            <div class="flex flex-col gap-2 text-xs text-slate-700">
-              <label for="audioTopicInput" class="font-medium text-slate-800">
-                Topic (e.g. “bryophyte life cycle”, “moss as bio-indicator”):
-              </label>
-              <input
-                id="audioTopicInput"
-                type="text"
-                class="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
-                placeholder="bryophyte life cycle"
-              />
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button
-                onclick="handleAudioLesson()"
-                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-[var(--deep-red)] hover:bg-[var(--dark-red)] shadow-md"
-              >
-                <i class="fa-solid fa-headphones"></i>
-                Listen &amp; Learn
-              </button>
-              <button
-                onclick="handleAnalogy()"
-                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50"
-              >
-                <i class="fa-solid fa-lightbulb"></i>
-                Explain with Analogy
-              </button>
-            </div>
-            <div class="border-t border-slate-200 pt-2">
-              <p id="audioTextOutput" class="text-xs text-slate-700 mb-2"></p>
-              <div id="analogyOutput" class="text-xs text-slate-700"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CHEMISTRY TAB -->
-    <section id="chemistryTab" class="tab-panel">
-      <div class="grid md:grid-cols-[2fr,3fr] gap-6 mt-4">
-        <div class="space-y-4">
-          <div class="card-3d p-5" data-aos="fade-up">
-            <h2 class="text-xl font-bold text-slate-900 mb-2">
-              Chemistry: Water, pH & Moss Health 💧
-            </h2>
-            <p class="text-sm text-slate-700 mb-2">
-              Many bryology theses measure <span class="font-semibold">pH</span> and dissolved ions. Acidic rain, road spray, or nutrients from
-              farming can all change the chemistry around mosses.
-            </p>
-            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1 mb-2">
-              <li><span class="font-semibold">pH</span> tells us how acidic or alkaline the water is.</li>
-              <li>Moss species often prefer a certain pH range.</li>
-              <li>Ion levels (like nitrate or heavy metals) can show pollution.</li>
-            </ul>
-            <p class="text-xs text-slate-500">
-              Tip: update the bullet points with the <span class="font-semibold">exact chemical variables</span> from your thesis.
-            </p>
-          </div>
-
-          <div class="grid gap-3" data-aos="fade-up">
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">pH</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
+                    <div class="bg-moss-deep text-white p-6 rounded-xl shadow-xl mt-4">
+                        <h3 class="font-bold text-xl mb-4 text-gold-DEFAULT">Study Sites in Otago</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Orokonui:</strong> Eucalypts vs Kānuka</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Saddle Hill:</strong> 5 canopy types!</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Cedar Creek:</strong> Pine vs Mānuka</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Flagstaff:</strong> Douglas Fir vs Mānuka</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Rankleburn:</strong> Old forestry site</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Ross Creek:</strong> Dunedin's first plantation</li>
+                            <li><i class="fa-solid fa-location-dot mr-2"></i> <strong>Silverpeaks:</strong> High altitude site</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    A scale from 0 to 14 showing how acidic or alkaline a solution is. 7 is neutral, below 7 is acidic.
-                  </p>
+
+                <!-- Analysis Column -->
+                <div class="w-full md:w-1/2 bg-white rounded-2xl shadow-xl p-6 border-b-8 border-earth">
+                    <h3 class="font-bold text-xl text-earth mb-4">What was measured?</h3>
+                    
+                    <div class="space-y-4">
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                            <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
+                                <span>🌿 Vascular Plants</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <p class="text-sm text-gray-600 mt-2">All ferns, grasses, shrubs, and trees were identified and counted. Classified as Native or Exotic.</p>
+                        </details>
+
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                            <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
+                                <span>💧 Non-Vascular (Bryophytes)</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <p class="text-sm text-gray-600 mt-2">Mosses and Liverworts identified under microscope. Substrate noted (Soil, Rock, Dead Wood, Live Bark).</p>
+                        </details>
+
+                        <details class="group p-4 bg-gray-50 rounded-lg cursor-pointer">
+                            <summary class="font-bold text-moss-dark list-none flex justify-between items-center">
+                                <span>🧪 Soil & Environment</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <p class="text-sm text-gray-600 mt-2">Soil samples taken for analysis (Sodium, Nitrogen, etc.). Canopy cover measured with hemispheric photography.</p>
+                        </details>
+                    </div>
                 </div>
-              </div>
             </div>
-            <div class="flip-card">
-              <div class="flip-inner">
-                <div class="flip-front">
-                  <h3 class="font-semibold text-lg mb-1">Ion</h3>
-                  <p class="text-xs text-amber-100">Flip me!</p>
+        </div>
+
+        <!-- RESULTS SECTION -->
+        <div id="results" class="section-hidden max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Key Findings</h2>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-10">
+                <!-- Finding 1 -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-moss-DEFAULT" data-aos="flip-up">
+                    <h3 class="text-xl font-bold mb-3">1. Total Diversity Surprise</h3>
+                    <p class="text-gray-600 mb-4">Contrary to expectations, there was <strong>no significant difference</strong> in total species richness between Native and Exotic canopies.</p>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                        <div class="bg-moss-DEFAULT h-4 rounded-full" style="width: 50%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs font-bold text-moss-deep">
+                        <span>Native Canopy</span>
+                        <span>Exotic Canopy (Equal)</span>
+                    </div>
                 </div>
-                <div class="flip-back">
-                  <p class="text-sm">
-                    An atom or molecule with an electric charge (e.g. NO₃⁻, Ca²⁺). Important in water chemistry for mosses.
-                  </p>
+
+                <!-- Finding 2 -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-gold-DEFAULT" data-aos="flip-up" data-aos-delay="100">
+                    <h3 class="text-xl font-bold mb-3">2. Native vs Exotic Plants</h3>
+                    <p class="text-gray-600 mb-4">However, Native canopies supported significantly more <strong>Native vascular plants</strong> than exotic canopies did.</p>
+                    <div class="flex items-end gap-2 h-20 mt-4">
+                        <div class="bg-moss-deep w-1/2 rounded-t-lg flex items-center justify-center text-white font-bold h-full">Native Canopy</div>
+                        <div class="bg-moss-light w-1/2 rounded-t-lg flex items-center justify-center text-white font-bold h-3/5">Exotic Canopy</div>
+                    </div>
+                    <p class="text-center text-xs mt-1">Native Plant Richness</p>
                 </div>
-              </div>
             </div>
-          </div>
+
+            <!-- Management & Sodium -->
+            <div class="bg-moss-deep text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fa-solid fa-tractor text-9xl"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-gold-DEFAULT mb-6">Management & Chemicals</h3>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-lg mb-2"><i class="fa-solid fa-scissors mr-2"></i>Intermittent vs Continuous</h4>
+                        <p class="text-sm opacity-90 mb-4">
+                            <strong>Intermittent Management</strong> (Harsh but rare, e.g., clear-felling every 30 years) actually supported HIGHER diversity than <strong>Continuous Management</strong> (regular low-intensity weeding/trapping).
+                        </p>
+                        <p class="text-xs italic bg-white/10 p-2 rounded">Why? Intermittent disturbance mimics natural events and leaves Coarse Woody Debris (logs) which mosses love!</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-2"><i class="fa-solid fa-flask mr-2"></i>The Sodium Problem</h4>
+                        <p class="text-sm opacity-90 mb-4">
+                            High levels of soil <strong>Sodium (Na+)</strong> were found to decrease Moss diversity. Vascular plants didn't mind, but mosses are sensitive!
+                        </p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-red-400 font-bold">Na+ ↑</span>
+                            <span class="h-0.5 w-10 bg-white"></span>
+                            <span class="text-green-400 font-bold">Mosses ↓</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Chemistry interactive -->
-        <div class="space-y-4">
-          <div class="card-3d p-5" data-aos="fade-left">
-            <h3 class="font-semibold text-slate-900 mb-1">Interactive pH Explorer</h3>
-            <p class="text-xs text-slate-600 mb-3">
-              Drag the slider to see how water pH might affect bryophyte stress.
+        <!-- NEW: FOREST SIMULATOR SECTION -->
+        <div id="simulator" class="section-hidden max-w-5xl mx-auto">
+            <h2 class="text-4xl font-extrabold text-moss-deep mb-6 text-center">✨ Forest Forecaster</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                Use the power of AI to simulate an ecosystem based on Aimee's thesis data. Adjust the parameters below to see how different management styles and soil conditions affect the forest understorey.
             </p>
-            <input
-              id="phSlider"
-              type="range"
-              min="0"
-              max="14"
-              value="6"
-              class="w-full mb-2 accent-[var(--deep-red)]"
-            />
-            <div class="flex justify-between text-xs text-slate-500 mb-2">
-              <span>0 (Strong acid)</span><span>7 (Neutral)</span><span>14 (Strong alkali)</span>
-            </div>
-            <p class="text-xs text-slate-700 mb-1">
-              pH value: <span id="phValue" class="font-semibold">6</span>
-            </p>
-            <p class="text-xs text-slate-700 mb-2">
-              Moss reaction: <span id="phInterpretation" class="font-semibold text-[var(--deep-red)]">Comfort zone for many species</span>
-            </p>
-            <canvas id="phChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- PHYSICS TAB -->
-    <section id="physicsTab" class="tab-panel">
-      <div class="grid md:grid-cols-[3fr,2fr] gap-6 mt-4">
-        <div class="space-y-4">
-          <div class="card-3d p-5" data-aos="fade-up">
-            <h2 class="text-xl font-bold text-slate-900 mb-2">
-              Physics: Light, Energy & Microclimate ☀️
-            </h2>
-            <p class="text-sm text-slate-700 mb-2">
-              Your thesis may link moss patterns to <span class="font-semibold">light intensity, temperature, and humidity</span>.
-              These are physical factors that change how much energy mosses can capture and how quickly they dry out.
-            </p>
-            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
-              <li>Too little light → not enough energy for photosynthesis.</li>
-              <li>Too much light & heat → moss dries out and shuts down.</li>
-              <li>Protected microhabitats (like rock cracks) balance light and moisture.</li>
-            </ul>
-          </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Controls -->
+                <div class="md:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-purple-500">
+                        <label class="block font-bold text-gray-700 mb-2">Canopy Type</label>
+                        <select id="sim-canopy" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none">
+                            <option value="Native (e.g. Kānuka)">Native (e.g. Kānuka)</option>
+                            <option value="Exotic (e.g. Pinus radiata)">Exotic (e.g. Pinus radiata)</option>
+                            <option value="Exotic (e.g. Eucalyptus)">Exotic (e.g. Eucalyptus)</option>
+                        </select>
+                    </div>
 
-          <!-- Physics accordions -->
-          <div class="card-3d p-5 space-y-3" data-aos="fade-up">
-            <h3 class="font-semibold text-lg text-slate-900">Field Microclimate Steps</h3>
-            <div class="border border-slate-200 rounded-2xl overflow-hidden">
-              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
-                <span class="text-sm font-semibold text-slate-800">Measuring light and temperature</span>
-                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
-              </button>
-              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
-                <ol class="list-decimal list-inside space-y-1">
-                  <li>Place a light meter at moss height at each sample point.</li>
-                  <li>Record light intensity (lux) and temperature.</li>
-                  <li>Link these data to moss cover or species in your analysis.</li>
-                </ol>
-              </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-blue-500">
+                        <label class="block font-bold text-gray-700 mb-2">Management Style</label>
+                        <select id="sim-management" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none">
+                            <option value="Intermittent (High disturbance, rare)">Intermittent (Logging)</option>
+                            <option value="Continuous (Low disturbance, frequent)">Continuous (Weeding)</option>
+                            <option value="None (Natural)">None (Natural)</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-l-8 border-red-500">
+                        <label class="block font-bold text-gray-700 mb-2">Soil Sodium (Na+)</label>
+                        <select id="sim-sodium" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-red-500 focus:outline-none">
+                            <option value="Low">Low Sodium</option>
+                            <option value="High">High Sodium</option>
+                        </select>
+                    </div>
+
+                    <button onclick="runSimulation()" class="w-full bg-purple-700 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-purple-800 transition transform hover:scale-105">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Forecast Forest
+                    </button>
+                </div>
+
+                <!-- Output -->
+                <div class="md:col-span-2">
+                    <div id="sim-output" class="bg-white h-full rounded-2xl shadow-xl p-8 border-4 border-dashed border-gray-300 flex items-center justify-center flex-col min-h-[400px]">
+                        <i class="fa-solid fa-tree-city text-6xl text-gray-200 mb-4"></i>
+                        <p class="text-gray-400 text-center text-lg">Adjust parameters and click "Forecast Forest" to generate an AI ecosystem prediction.</p>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
 
-        <!-- Physics calculator -->
-        <div class="space-y-4">
-          <div class="card-3d p-5" data-aos="fade-left">
-            <h3 class="font-semibold text-slate-900 mb-1">
-              Simple Physics: Weight of Water on Moss
-            </h3>
-            <p class="text-xs text-slate-600 mb-3">
-              Estimate the force of water on a moss patch after rain. Imagine 1&nbsp;cm of water sitting on top.
-            </p>
-            <div class="space-y-2 text-xs">
-              <label class="font-medium text-slate-800" for="areaInput">
-                Moss patch area (m²):
-              </label>
-              <input
-                id="areaInput"
-                type="number"
-                min="0"
-                step="0.1"
-                value="0.2"
-                class="w-full rounded-xl border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
-              />
-              <p class="text-[11px] text-slate-500">
-                (e.g. 0.2 m² ≈ square of ~45 cm by 45 cm)
-              </p>
-            </div>
-            <button
-              onclick="calculateWaterWeight()"
-              class="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-[var(--deep-red)] hover:bg-[var(--dark-red)] shadow-md"
-            >
-              <i class="fa-solid fa-calculator"></i>
-              Calculate weight force
-            </button>
-            <div class="mt-3 text-xs text-slate-700">
-              <p>Estimated water mass: <span id="waterMass" class="font-semibold">2.0 kg</span></p>
-              <p>Weight force (Earth): <span id="waterForce" class="font-semibold">≈ 19.6 N</span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        <!-- DISCUSSION SECTION -->
+        <div id="discussion" class="section-hidden max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-moss-deep mb-6 text-center">Discussion & Implications</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold text-earth mb-2">Transitional Forestry</h3>
+                    <p class="text-gray-700">
+                        Since exotic forests can support native regeneration (if near a seed source), they can be used as a "nursery". We can transition these pine blocks into native forests slowly, rather than cutting them all down at once. This maintains habitat for the mosses and ferns that have established there.
+                    </p>
+                </div>
 
-    <!-- QUICK FIRE TAB -->
-    <section id="quickfireTab" class="tab-panel">
-      <div class="mt-4 grid md:grid-cols-[3fr,2fr] gap-6">
-        <div class="card-3d p-5 md:p-6" data-aos="fade-up">
-          <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">
-            Quick Fire Revision 🔥
-          </h2>
-          <p class="text-sm text-slate-700 mb-4">
-            Use these quick questions to check understanding of the thesis. Try covering the answer with your hand first.
-          </p>
-
-          <div class="space-y-3 text-sm">
-            <div class="border border-slate-200 rounded-2xl p-3">
-              <p class="font-semibold text-slate-900">1. What is a bryophyte?</p>
-              <p class="text-slate-600 text-xs mt-1">
-                A simple, non-vascular plant such as a moss, liverwort, or hornwort.
-              </p>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold text-earth mb-2">Indicator Species</h3>
+                    <p class="text-gray-700">
+                        Three native species were identified as strong indicators of Native Forest conditions:
+                    </p>
+                    <ul class="mt-2 space-y-1 text-sm font-semibold text-moss-DEFAULT">
+                        <li>1. Blechnum procerum (Fern)</li>
+                        <li>2. Pseudopanax colensoi (Tree)</li>
+                        <li>3. Coprosma dumosa (Shrub)</li>
+                    </ul>
+                </div>
             </div>
-            <div class="border border-slate-200 rounded-2xl p-3">
-              <p class="font-semibold text-slate-900">2. Why are mosses useful as bio-indicators?</p>
-              <p class="text-slate-600 text-xs mt-1">
-                Their tissues absorb water and pollutants directly, so they respond quickly to changes in the environment.
-              </p>
-            </div>
-            <div class="border border-slate-200 rounded-2xl p-3">
-              <p class="font-semibold text-slate-900">3. Name one abiotic factor your thesis measures.</p>
-              <p class="text-slate-600 text-xs mt-1">
-                Possible answers: light intensity, temperature, humidity, pH, pollutant concentration (edit to match your study).
-              </p>
-            </div>
-          </div>
         </div>
 
-        <!-- AI Quick Fire -->
-        <div class="card-3d p-5 space-y-3" data-aos="fade-left">
-          <h3 class="font-semibold text-slate-900">
-            AI Mystery Question ✨
-          </h3>
-          <p class="text-xs text-slate-700">
-            Let Bryologist Bot create a single multiple-choice question based on your thesis topics.
-          </p>
-          <div class="space-y-2 text-xs">
-            <label for="quickfireTopicInput" class="font-medium text-slate-800">
-              Topic for AI (e.g. “bryophytes as bio-indicators”):
-            </label>
-            <input
-              id="quickfireTopicInput"
-              type="text"
-              class="w-full rounded-xl border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
-              placeholder="bryophytes as bio-indicators"
-            />
-          </div>
-          <button
-            onclick="generateMysteryQuestion()"
-            class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] shadow-md"
-          >
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            Generate AI Mystery Question ✨
-          </button>
+        <!-- QUIZ SECTION -->
+        <div id="quiz" class="section-hidden max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-extrabold text-moss-deep mb-8">AI Quiz Master</h2>
+            
+            <div class="bg-white p-8 rounded-3xl shadow-2xl border-4 border-gold-DEFAULT max-w-3xl mx-auto relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 bg-gold-DEFAULT w-32 h-32 rounded-full opacity-20"></div>
+                
+                <h3 class="text-2xl font-bold mb-4 text-moss-deep">Test Your Knowledge</h3>
+                <p class="mb-6 text-gray-600">The AI will generate a unique question based on the thesis every time.</p>
+                
+                <div id="quiz-container" class="text-left hidden mb-6">
+                    <p id="quiz-question" class="text-xl font-bold mb-6 text-gray-800"></p>
+                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Options injected here -->
+                    </div>
+                    <div id="quiz-feedback" class="mt-4 font-bold text-center text-lg hidden"></div>
+                </div>
 
-          <div id="mysteryQuestionArea" class="mt-3 text-xs text-slate-800 space-y-2">
-            <!-- Question + options injected here -->
-          </div>
-          <p id="mysteryFeedback" class="text-xs text-slate-600"></p>
+                <div id="quiz-loading" class="hidden py-8">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-gold-DEFAULT"></i>
+                    <p class="mt-2 text-gray-500">Crafting question...</p>
+                </div>
+
+                <button onclick="generateQuiz()" class="bg-moss-DEFAULT text-white px-8 py-3 rounded-xl font-bold hover:bg-moss-dark transition transform hover:scale-105 shadow-lg border-b-4 border-moss-deep">
+                    <i class="fa-solid fa-dice mr-2"></i> Generate New Question
+                </button>
+            </div>
         </div>
-      </div>
-    </section>
-  </div>
 
-  <!-- Floating Chatbot Toggle -->
-  <button
-    id="chatWidgetToggle"
-    onclick="toggleChatWidget()"
-    class="rounded-full px-4 py-2 text-sm font-semibold bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] text-white shadow-xl flex items-center gap-2 hover:scale-105 transition"
-  >
-    <i class="fa-solid fa-robot"></i>
-    Bryologist Bot
-  </button>
+    </main>
 
-  <!-- Chatbot Panel -->
-  <div
-    id="chatWidgetPanel"
-    class="flex flex-col bg-white"
-  >
-    <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-      <div>
-        <p class="text-sm font-semibold text-slate-900">
-          Bryologist Bot
-        </p>
-        <p class="text-[11px] text-slate-500">
-          AI helper – not the real Diego. Ask short science questions.
-        </p>
-      </div>
-      <button
-        onclick="toggleChatWidget()"
-        class="rounded-full w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200"
-      >
-        <i class="fa-solid fa-xmark text-xs text-slate-600"></i>
-      </button>
+    <!-- Floating Chat Widget -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Chat Box -->
+        <div id="chat-box" class="bg-white w-80 h-96 rounded-2xl shadow-2xl mb-4 hidden flex flex-col border-4 border-moss-deep overflow-hidden">
+            <div class="bg-moss-deep text-white p-3 font-bold flex justify-between items-center">
+                <span><i class="fa-solid fa-tree mr-2"></i>Forest Bot</span>
+                <button onclick="toggleChat()" class="hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-3">
+                <div class="bg-moss-light text-moss-deep p-2 rounded-lg text-sm self-start w-3/4">
+                    I am your bryologist ready to answer any questions you have!
+                </div>
+            </div>
+            <div class="p-2 bg-gray-100 flex gap-2">
+                <input type="text" id="chat-input" placeholder="Ask a question..." class="flex-1 p-2 rounded-lg border focus:outline-none focus:border-moss-DEFAULT" onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()" class="bg-moss-DEFAULT text-white p-2 rounded-lg hover:bg-moss-dark"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Chat Button -->
+        <button onclick="toggleChat()" class="bg-moss-deep text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 transition border-4 border-gold-DEFAULT">
+            <i class="fa-solid fa-comment-dots"></i>
+        </button>
     </div>
-    <div
-      id="chatMessages"
-      class="flex-1 flex flex-col gap-1 px-3 py-3 overflow-y-auto text-xs"
-    >
-      <div class="chat-bubble bot">
-        Hi! I’m Bryologist Bot 🤖🌿. I explain Diego’s thesis in simple science. What are you curious about?
-      </div>
-    </div>
-    <form
-      id="chatForm"
-      class="px-3 py-2 border-t border-slate-200 flex items-center gap-2"
-    >
-      <input
-        id="chatInput"
-        type="text"
-        class="flex-1 rounded-full border border-slate-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
-        placeholder="Ask about mosses, pH, microclimate..."
-        autocomplete="off"
-      />
-      <button
-        type="submit"
-        class="rounded-full w-8 h-8 flex items-center justify-center bg-[var(--deep-red)] hover:bg-[var(--dark-red)] text-white text-xs"
-      >
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
-    </form>
-  </div>
 
-  <!-- AOS JS -->
-  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        // Init AOS
+        AOS.init();
 
-  <script>
-    // 1) Where the Vercel backend lives
-    const API_BASE = "https://YOUR-VERCEL-APP.vercel.app"; // Replace with your own Vercel URL
+        // Navigation Logic
+        function switchTab(tabId) {
+            // Hide all sections
+            const sections = ['home', 'intro', 'methods', 'results', 'simulator', 'discussion', 'quiz'];
+            sections.forEach(s => {
+                document.getElementById(s).classList.add('section-hidden');
+                document.getElementById(s).classList.remove('section-active');
+            });
 
-    // 2) Helper to call Gemini through the backend
-    async function callGemini(prompt) {
-      try {
-        const response = await fetch(\`\${API_BASE}/api/ask\`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: prompt }),
-        });
+            // Show selected
+            const activeSection = document.getElementById(tabId);
+            activeSection.classList.remove('section-hidden');
+            activeSection.classList.add('section-active');
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || response.statusText);
-        return data.reply || "No response.";
-      } catch (e) {
-        console.error("Gemini call error:", e);
-        return \`Error: \${e.message}\`;
-      }
-    }
-
-    // Tab handling
-    function showTab(tabId) {
-      document.querySelectorAll(".tab-panel").forEach((panel) => {
-        panel.classList.toggle("active", panel.id === tabId);
-      });
-      document.querySelectorAll(".nav-tab").forEach((btn) => {
-        btn.classList.toggle(
-          "active",
-          btn.getAttribute("data-tab") === tabId
-        );
-      });
-
-      // Scroll to top of content on mobile
-      const container = document.getElementById(tabId);
-      if (container) {
-        const rect = container.getBoundingClientRect();
-        if (window.innerWidth < 768 && rect.top > 0) {
-          window.scrollTo({ top: rect.top + window.scrollY - 80, behavior: "smooth" });
+            // Update Nav Buttons
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + tabId).classList.add('active');
         }
-      }
-    }
 
-    function scrollToSection(tabId) {
-      showTab(tabId);
-    }
-
-    // Chatbot widget
-    function toggleChatWidget() {
-      const panel = document.getElementById("chatWidgetPanel");
-      panel.classList.toggle("open");
-    }
-
-    function openChatWidget() {
-      const panel = document.getElementById("chatWidgetPanel");
-      if (!panel.classList.contains("open")) {
-        panel.classList.add("open");
-      }
-    }
-
-    function appendChatMessage(text, isUser) {
-      const chat = document.getElementById("chatMessages");
-      const bubble = document.createElement("div");
-      bubble.classList.add("chat-bubble", isUser ? "user" : "bot");
-      // Use marked for bot messages, plain text for user
-      if (isUser) {
-        bubble.textContent = text;
-      } else {
-        bubble.innerHTML = marked.parse(text || "");
-      }
-      chat.appendChild(bubble);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    async function handleChatSubmit(event) {
-      event.preventDefault();
-      const input = document.getElementById("chatInput");
-      const msg = input.value.trim();
-      if (!msg) return;
-      input.value = "";
-      appendChatMessage(msg, true);
-
-      const prompt =
-        "You are Bryologist Bot, a fun AI version of teacher Diego. " +
-        "You are a bot, not the real teacher. Explain science for a 14-year-old, " +
-        "use simple language and a few emojis, and keep answers short. " +
-        "Question: " + msg;
-
-      const reply = await callGemini(prompt);
-      appendChatMessage(reply, false);
-    }
-
-    // AI Audio & Analogy
-    async function generateAudioLesson(topic) {
-      const prompt =
-        "You are a fun science teacher explaining " +
-        topic +
-        " to a 14-year-old. Max 80 words. " +
-        "End with a ‘Secret Tip’. Plain text only.";
-      const text = await callGemini(prompt);
-      return text;
-    }
-
-    async function explainWithAnalogy(topic) {
-      const prompt =
-        "Explain " +
-        topic +
-        " using a fun analogy for a 14-year-old. Max 2 sentences.";
-      const text = await callGemini(prompt);
-      return text;
-    }
-
-    async function handleAudioLesson() {
-      const topicInput = document.getElementById("audioTopicInput");
-      const topic = topicInput.value.trim() || "bryophyte life cycle";
-      const output = document.getElementById("audioTextOutput");
-
-      output.textContent = "Loading short audio-style explanation...";
-      const text = await generateAudioLesson(topic);
-      output.textContent = text;
-
-      // Speech synthesis
-      try {
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = 1;
-          utterance.pitch = 1;
-          window.speechSynthesis.speak(utterance);
+        // Chat Logic
+        function toggleChat() {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.classList.toggle('hidden');
         }
-      } catch (e) {
-        console.error("Speech synthesis error:", e);
-      }
-    }
 
-    async function handleAnalogy() {
-      const topicInput = document.getElementById("audioTopicInput");
-      const topic = topicInput.value.trim() || "bryophyte life cycle";
-      const output = document.getElementById("analogyOutput");
-      output.innerHTML = "<em>Thinking of a good analogy...</em>";
-      const text = await explainWithAnalogy(topic);
-      output.innerHTML = marked.parse(text || "");
-    }
+        const API_BASE = "https://YOUR-VERCEL-APP.vercel.app"; // PLACEHOLDER - USER TO REPLACE
 
-    // Quick Fire AI MCQ
-    function safeJsonParseMaybe(text) {
-      if (!text) return null;
-      // Remove code fences if present
-      let cleaned = text.trim();
-      cleaned = cleaned.replace(/```json/gi, "```");
-      cleaned = cleaned.replace(/```/g, "");
-      // Try to find the first JSON object in the string
-      const firstBrace = cleaned.indexOf("{");
-      const lastBrace = cleaned.lastIndexOf("}");
-      if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-        return null;
-      }
-      try {
-        const jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
-        return JSON.parse(jsonStr);
-      } catch (e) {
-        console.error("JSON parse error:", e, cleaned);
-        return null;
-      }
-    }
+        async function callGemini(prompt) {
+            if (API_BASE.includes("YOUR-VERCEL-APP")) {
+                throw new Error("⚠️ API_BASE not set. See setup instructions.");
+            }
+            try {
+                const response = await fetch(`${API_BASE}/api/ask`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: prompt }),
+                });
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+                const data = await response.json();
+                return data.reply;
+            } catch (e) {
+                console.error("Gemini Call Failed:", e);
+                throw e; // Propagate error
+            }
+        }
 
-    function renderMysteryQuestion(obj) {
-      const area = document.getElementById("mysteryQuestionArea");
-      const feedback = document.getElementById("mysteryFeedback");
-      area.innerHTML = "";
-      feedback.textContent = "";
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msgs = document.getElementById('chat-messages');
+            const userText = input.value.trim();
+            
+            if (!userText) return;
 
-      if (!obj || !obj.question || !Array.isArray(obj.options)) {
-        area.innerHTML = "<p class='text-xs text-red-600'>Sorry, I couldn’t understand the AI question.</p>";
-        return;
-      }
+            // Add User Message
+            msgs.innerHTML += `<div class="chat-msg bg-white border border-gray-200 p-2 rounded-lg text-sm self-end ml-auto w-3/4 mb-2 shadow-sm text-right">${userText}</div>`;
+            input.value = '';
+            msgs.scrollTop = msgs.scrollHeight;
 
-      const q = document.createElement("p");
-      q.className = "font-semibold text-slate-900";
-      q.textContent = obj.question;
-      area.appendChild(q);
+            // Loading state
+            const loadingId = 'loading-' + Date.now();
+            msgs.innerHTML += `<div id="${loadingId}" class="chat-msg bg-gray-200 text-gray-500 p-2 rounded-lg text-sm self-start w-3/4 mb-2">Thinking...</div>`;
+            msgs.scrollTop = msgs.scrollHeight;
 
-      const list = document.createElement("div");
-      list.className = "mt-2 flex flex-col gap-2";
-      area.appendChild(list);
+            try {
+                // API Call
+                const contextPrompt = `You are an expert on Aimee Pritchard's MSc thesis about Plant Communities in Native and Exotic Forests. Context: Higher diversity in intermittent management. Sodium hurts mosses. Answer concisely: ${userText}`;
+                const reply = await callGemini(contextPrompt);
 
-      obj.options.forEach((opt, index) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "mcq-option text-left";
-        btn.textContent = opt;
-        btn.addEventListener("click", () => {
-          const buttons = area.querySelectorAll(".mcq-option");
-          buttons.forEach((b) => b.classList.remove("correct", "incorrect"));
-          if (index === obj.correctIndex) {
-            btn.classList.add("correct");
-            feedback.textContent = "Nice! That matches the AI key. ✅";
-          } else {
-            btn.classList.add("incorrect");
-            feedback.textContent =
-              "Good try. The correct answer is option " +
-              String.fromCharCode(65 + obj.correctIndex) +
-              ".";
-          }
-        });
-        list.appendChild(btn);
-      });
-    }
+                // Remove loading and add Bot Message
+                document.getElementById(loadingId).remove();
+                
+                // Render Markdown if possible, or just text
+                const cleanReply = marked.parse(reply);
+                msgs.innerHTML += `<div class="chat-msg bg-moss-light text-moss-deep p-2 rounded-lg text-sm self-start w-3/4 mb-2 shadow-sm prose prose-sm">${cleanReply}</div>`;
+            } catch (e) {
+                document.getElementById(loadingId).remove();
+                let errMsg = "Sorry, I can't connect to the forest database right now.";
+                if(e.message.includes("API_BASE")) errMsg = "⚠️ <a href='#bottom' class='underline'>Please set the Vercel URL in the code!</a>";
+                
+                msgs.innerHTML += `<div class="chat-msg bg-red-100 text-red-800 p-2 rounded-lg text-sm self-start w-3/4 mb-2 shadow-sm border border-red-200">${errMsg}</div>`;
+            }
+            msgs.scrollTop = msgs.scrollHeight;
+        }
 
-    async function generateMysteryQuestion() {
-      const topicInput = document.getElementById("quickfireTopicInput");
-      const topic = topicInput.value.trim() || "bryophytes and microclimate";
-      const area = document.getElementById("mysteryQuestionArea");
-      const feedback = document.getElementById("mysteryFeedback");
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
 
-      area.innerHTML = "<p class='text-xs text-slate-500'>Asking Bryologist Bot for a question...</p>";
-      feedback.textContent = "";
+        // --- FOREST FORECASTER LOGIC ---
+        async function runSimulation() {
+            const canopy = document.getElementById('sim-canopy').value;
+            const management = document.getElementById('sim-management').value;
+            const sodium = document.getElementById('sim-sodium').value;
+            const outputDiv = document.getElementById('sim-output');
 
-      const prompt =
-        "Generate 1 multiple-choice question about " +
-        topic +
-        ". Return ONLY raw JSON: { \"question\": \"text\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctIndex\": 0 }. Keep text under 20 words.";
+            outputDiv.innerHTML = `
+                <div class="flex flex-col items-center animate-pulse">
+                    <i class="fa-solid fa-seedling text-6xl text-moss-DEFAULT mb-4"></i>
+                    <p class="text-xl font-bold text-moss-dark">Simulating Ecosystem...</p>
+                    <p class="text-sm text-gray-500">Applying thesis variables...</p>
+                </div>
+            `;
 
-      const reply = await callGemini(prompt);
-      const obj = safeJsonParseMaybe(reply);
-      renderMysteryQuestion(obj);
-    }
+            const prompt = `
+                Act as a Forest Ecology Simulator based on Aimee Pritchard's thesis.
+                
+                Simulate a forest plot with these parameters:
+                1. Canopy: ${canopy}
+                2. Management: ${management}
+                3. Soil Sodium: ${sodium}
 
-    // Moisture chart & slider
-    let moistureChart;
-    function initMoistureChart() {
-      const ctx = document.getElementById("bryophyteMoistureChart");
-      if (!ctx) return;
-      moistureChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: ["Dry", "Cool & moist", "Very wet"],
-          datasets: [
-            {
-              label: "Relative moss health",
-              data: [20, 90, 40],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: {
-              min: 0,
-              max: 100,
-              ticks: { stepSize: 20 },
-            },
-          },
-        },
-      });
-    }
+                Based on the thesis findings (Intermittent management increases diversity via woody debris, Sodium reduces moss diversity, Native canopies support more native species), describe the resulting understorey.
+                
+                Format the response with:
+                - A bold creative Title for this forest type.
+                - A "Biodiversity Forecast" rating (Low/Medium/High).
+                - A description of the "Moss Layer" (Health/Diversity).
+                - A description of the "Vascular Plant Layer" (Native vs Exotic presence).
+                - Use emojis. Keep it concise but scientific.
+            `;
 
-    function updateMoistureText(value) {
-      const status = document.getElementById("moistureStatus");
-      const v = Number(value);
-      if (v < 25) {
-        status.textContent = "Stressed (too dry)";
-      } else if (v < 55) {
-        status.textContent = "OK but cautious";
-      } else if (v <= 80) {
-        status.textContent = "Happy (ideal moisture)";
-      } else {
-        status.textContent = "Waterlogged (risk of decay)";
-      }
-    }
+            try {
+                const prediction = await callGemini(prompt);
+                outputDiv.innerHTML = `<div class="prose prose-sm w-full max-w-none text-left">${marked.parse(prediction)}</div>`;
+                outputDiv.classList.remove('border-dashed', 'border-gray-300', 'border-red-500');
+                outputDiv.classList.add('border-purple-200');
+            } catch (e) {
+                outputDiv.innerHTML = `<div class="text-center text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation text-4xl mb-2"></i><br>${e.message}</div>`;
+                outputDiv.classList.add('border-red-500');
+            }
+        }
 
-    // pH chart and slider
-    let phChart;
-    function initPhChart() {
-      const ctx = document.getElementById("phChart");
-      if (!ctx) return;
-      phChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Strong acid", "Moderate", "Neutral", "Moderate alkali", "Strong alkali"],
-          datasets: [
-            {
-              label: "Suitability for moss (generic)",
-              data: [10, 60, 90, 50, 15],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: {
-              min: 0,
-              max: 100,
-              ticks: { stepSize: 20 },
-            },
-          },
-        },
-      });
-    }
+        // --- DYNAMIC QUIZ LOGIC ---
+        async function generateQuiz() {
+            const container = document.getElementById('quiz-container');
+            const loading = document.getElementById('quiz-loading');
+            const questionEl = document.getElementById('quiz-question');
+            const optionsEl = document.getElementById('quiz-options');
+            const feedbackEl = document.getElementById('quiz-feedback');
 
-    function updatePhInterpretation(value) {
-      const phVal = document.getElementById("phValue");
-      const phText = document.getElementById("phInterpretation");
-      const v = Number(value);
-      phVal.textContent = v.toString();
-      if (v < 4) {
-        phText.textContent = "Very acidic – many mosses stressed.";
-      } else if (v < 6.5) {
-        phText.textContent = "Slightly acidic – comfy for many woodland mosses.";
-      } else if (v <= 7.5) {
-        phText.textContent = "Around neutral – often safe zone.";
-      } else if (v <= 9) {
-        phText.textContent = "Slightly alkaline – some calcicolous species like this.";
-      } else {
-        phText.textContent = "Strong alkali – fewer mosses adapted here.";
-      }
-    }
+            container.classList.add('hidden');
+            loading.classList.remove('hidden');
+            feedbackEl.classList.add('hidden');
+            optionsEl.innerHTML = '';
 
-    // Physics water weight calculator
-    function calculateWaterWeight() {
-      const areaInput = document.getElementById("areaInput");
-      const massOut = document.getElementById("waterMass");
-      const forceOut = document.getElementById("waterForce");
-      const area = Math.max(0, Number(areaInput.value) || 0);
-      const depth = 0.01; // 1 cm of water in meters
-      const volume = area * depth; // m3
-      const densityWater = 1000; // kg/m3
-      const mass = volume * densityWater;
-      const g = 9.8; // m/s2
-      const force = mass * g;
-      massOut.textContent = mass.toFixed(1) + " kg";
-      forceOut.textContent = "≈ " + force.toFixed(1) + " N";
-    }
+            const prompt = `
+                Generate a multiple-choice question based on Aimee Pritchard's thesis "Canopy and Management Influences on Plant Communities".
+                Focus on topics like: Bryophytes as indicators, Sodium effects, Intermittent vs Continuous management, or Native vs Exotic canopy influence.
+                
+                Return ONLY a JSON object with this exact format (no markdown, just raw JSON):
+                {
+                    "question": "The question text here?",
+                    "options": ["Wrong Answer 1", "Correct Answer", "Wrong Answer 2", "Wrong Answer 3"],
+                    "correctIndex": 1,
+                    "explanation": "Short explanation of why."
+                }
+            `;
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // Init AOS
-      if (window.AOS) {
-        AOS.init({ duration: 600, once: true });
-      }
+            try {
+                let text = await callGemini(prompt);
+                // Cleanup json if it comes with markdown blocks
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                const quizData = JSON.parse(text);
 
-      // Nav tab clicks
-      document.querySelectorAll(".nav-tab").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const tabId = btn.getAttribute("data-tab");
-          if (tabId) showTab(tabId);
-        });
-      });
+                loading.classList.add('hidden');
+                container.classList.remove('hidden');
+                
+                questionEl.innerText = quizData.question;
+                questionEl.className = "text-xl font-bold mb-6 text-gray-800"; // Reset classes
 
-      // Chat form
-      const chatForm = document.getElementById("chatForm");
-      if (chatForm) {
-        chatForm.addEventListener("submit", handleChatSubmit);
-      }
+                quizData.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-gray-100 hover:bg-gray-200 p-4 rounded-xl text-left border-2 border-transparent transition-all";
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(index, quizData.correctIndex, quizData.explanation, btn);
+                    optionsEl.appendChild(btn);
+                });
 
-      // Moisture slider events
-      const moistureSlider = document.getElementById("moistureSlider");
-      if (moistureSlider) {
-        moistureSlider.addEventListener("input", (e) =>
-          updateMoistureText(e.target.value)
-        );
-        updateMoistureText(moistureSlider.value);
-      }
+            } catch (e) {
+                console.error(e);
+                loading.classList.add('hidden');
+                
+                let msg = "AI Error. Try again.";
+                if (e.message.includes("API_BASE")) msg = "⚠️ Setup Required: Update API_BASE URL in code.";
+                else if (e.message.includes("Server Error")) msg = "⚠️ Backend Connection Failed. Check Vercel.";
+                
+                container.classList.remove('hidden');
+                questionEl.innerHTML = `<span class="text-red-500">${msg}</span>`;
+                questionEl.className = "text-xl font-bold mb-6 text-center";
+            }
+        }
 
-      // pH slider events
-      const phSlider = document.getElementById("phSlider");
-      if (phSlider) {
-        phSlider.addEventListener("input", (e) =>
-          updatePhInterpretation(e.target.value)
-        );
-        updatePhInterpretation(phSlider.value);
-      }
+        function checkAnswer(selectedIndex, correctIndex, explanation, btnElement) {
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const allBtns = document.getElementById('quiz-options').children;
 
-      // Init charts
-      initMoistureChart();
-      initPhChart();
+            for (let btn of allBtns) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            }
 
-      // Initial physics calculation
-      calculateWaterWeight();
-    });
-  </script>
+            if (selectedIndex === correctIndex) {
+                btnElement.classList.remove('bg-gray-100', 'opacity-50');
+                btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                feedbackEl.innerHTML = `<span class="text-green-600"><i class="fa-solid fa-check-circle"></i> Correct!</span> <br><span class="text-sm font-normal text-gray-600">${explanation}</span>`;
+            } else {
+                btnElement.classList.remove('bg-gray-100', 'opacity-50');
+                btnElement.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                
+                // Highlight correct one
+                allBtns[correctIndex].classList.remove('opacity-50');
+                allBtns[correctIndex].classList.add('bg-green-100', 'border-green-500');
 
-  <!--
-  ========= TEACHER-ONLY BACKEND & DEPLOYMENT GUIDE (NOT VISIBLE TO STUDENTS) =========
+                feedbackEl.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-xmark-circle"></i> Incorrect.</span> <br><span class="text-sm font-normal text-gray-600">${explanation}</span>`;
+            }
+            feedbackEl.classList.remove('hidden');
+        }
+    </script>
 
-  1. Get a Gemini API key
-     - Go to Google AI Studio (search: "Google AI Studio gemini").
-     - Sign in with a Google account.
-     - Create an API key for the Gemini 2.5 Flash model.
-     - Copy the key – you will paste it into Vercel later as GEMINI_API_KEY.
+    <!-- 
+    ⭐ "FOR DUMMIES" MASTER GUIDE: HOW TO PUT THIS ONLINE ⭐
 
-  2. GitHub repository structure
-     - Create a GitHub repo (for example: ls-2-bryology-revision).
-     - At the root of the repo, place this file as: index.html
-     - Also at the root, create a folder named: api
-     - Inside the api folder, create a file: ask.js
-     - Final structure:
+    If you haven't touched this in months, don't worry. Just follow these steps exactly to make the AI Chatbot and Mystery Questions work.
 
-       / (repo root)
-       ├─ index.html
-       └─ api/
-          └─ ask.js
+    --- PHASE 1: GET YOUR FILES READY ON YOUR COMPUTER ---
 
-  3. Exact backend code for api/ask.js (Golden Pattern)
-     - Paste the code below into api/ask.js.
-     - Update the allowedOrigins array if your domains are different.
+    1. Create a Folder:
+       - Create a new folder on your Desktop named "science-revision".
 
-  ------------------- BEGIN api/ask.js -------------------
+    2. Save the Website:
+       - Save this file you are looking at right now as "index.html" inside that folder.
 
-  // api/ask.js - Vercel serverless function
-  export default async function handler(req, res) {
-    // --- THE GUEST LIST (Allowed URLs) ---
-    const allowedOrigins = [
-      "https://ls-2-science-revision.vercel.app",   // The Vercel App itself
-      "https://educadug.github.io",                 // GitHub Page 1
-      "https://mrguevaracga.github.io",             // GitHub Page 2
-      "http://localhost:3000"
-    ];
+    3. Create the "Backend" (The brain):
+       - Inside "science-revision", create a new folder named "api" (lowercase).
+       - Inside "api", create a new text file named "ask.js".
+       - Paste the code below into "ask.js" and save it:
 
-    const origin = req.headers.origin || "";
+       // --- COPY START (api/ask.js) ---
+       export const config = { runtime: 'edge' };
+       
+       export default async function handler(req) {
+         const origin = req.headers.get("origin") || "";
+         const headers = {
+           "Access-Control-Allow-Origin": origin, 
+           "Access-Control-Allow-Methods": "POST, OPTIONS",
+           "Access-Control-Allow-Headers": "Content-Type",
+         };
+       
+         if (req.method === "OPTIONS") return new Response(null, { status: 200, headers });
+         if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
+       
+         try {
+           const body = await req.json();
+           const apiKey = process.env.GEMINI_API_KEY; 
+       
+           if (!apiKey) return new Response(JSON.stringify({ error: "Server Error: No API Key found in Vercel Settings." }), { status: 500, headers });
+       
+           const googleResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ contents: [{ parts: [{ text: body.message }] }] }),
+           });
+       
+           const data = await googleResponse.json();
+           const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "AI Error: Could not generate text.";
+       
+           return new Response(JSON.stringify({ reply: replyText }), { status: 200, headers });
+         } catch (error) {
+           return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers });
+         }
+       }
+       // --- COPY END ---
 
-    if (allowedOrigins.includes(origin)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    --- PHASE 2: PUT IT ON GITHUB ---
 
-    if (req.method === "OPTIONS") {
-      res.status(200).end();
-      return;
-    }
+    1. Log in to GitHub.com.
+    2. Click the "+" icon (top right) -> "New Repository".
+    3. Name it "science-revision". Make it Public. Click "Create repository".
+    4. Click the link that says "uploading an existing file".
+    5. Drag your "index.html" file AND your "api" folder into the upload box.
+    6. Click the green "Commit changes" button.
 
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+    --- PHASE 3: DEPLOY TO VERCEL ---
 
-    try {
-      const { message } = req.body || {};
-      if (!message) return res.status(400).json({ error: "Missing message" });
+    1. Go to Vercel.com and log in.
+    2. Click "Add New..." -> "Project".
+    3. You will see your "science-revision" repo in the list. Click "Import".
+    4. Click the blue "Deploy" button.
+    5. Wait ~1 minute. When you see confetti, click the picture of your site.
+    6. COPY the URL from the browser bar (e.g., https://science-revision.vercel.app).
 
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) return res.status(500).json({ error: "No GEMINI_API_KEY configured" });
+    --- PHASE 4: ACTIVATE THE AI BRAIN ---
 
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+    1. Get the Key:
+       - Go to https://aistudio.google.com/app/apikey
+       - Click "Create API Key". Copy that long string of random letters.
 
-      const geminiResponse = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: message }] }],
-        }),
-      });
+    2. Add it to Vercel:
+       - Go back to your project dashboard on Vercel.
+       - Click "Settings" (top menu) -> "Environment Variables" (left menu).
+       - In "Key", type: GEMINI_API_KEY
+       - In "Value", paste your Google Key.
+       - Click "Save".
 
-      const data = await geminiResponse.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn’t generate a response.";
+    3. Restart:
+       - Click "Deployments" (top menu).
+       - Click the three dots (...) next to the top item -> "Redeploy".
+       - Click "Redeploy" again. (This creates the connection).
 
-      return res.status(200).json({ reply: text });
-    } catch (err) {
-      console.error("Server error:", err);
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
+    --- PHASE 5: FINAL CONNECTION ---
 
-  ------------------- END api/ask.js -------------------
+    1. Go back to your computer. Open "index.html".
+    2. Scroll to the bottom script section.
+    3. Find: const API_BASE = "https://YOUR-VERCEL-APP.vercel.app";
+    4. Replace the URL with your REAL Vercel URL you copied in Phase 3.
+    5. Save the file.
+    6. Go back to your GitHub repo -> Add File -> Upload files -> Upload the fixed index.html -> Commit changes.
 
-  4. Deploy with Vercel
-     - Go to vercel.com and sign in (GitHub integration makes this easiest).
-     - Click "Add New Project" → "Import Git Repository".
-     - Choose the repo containing this index.html and api/ask.js.
-     - Vercel should automatically detect the /api folder as serverless functions.
-
-  5. Set the GEMINI_API_KEY environment variable
-     - In your Vercel project dashboard, open "Settings" → "Environment Variables".
-     - Add a new variable:
-         Name: GEMINI_API_KEY
-         Value: (paste your Gemini API key from AI Studio)
-     - Save and redeploy the project (Vercel may redeploy automatically).
-
-  6. Update API_BASE in index.html
-     - After deployment, you’ll get a URL like:
-         https://ls-2-science-revision.vercel.app
-     - In this index.html, find:
-         const API_BASE = "https://YOUR-VERCEL-APP.vercel.app";
-       and replace it with your URL, for example:
-         const API_BASE = "https://ls-2-science-revision.vercel.app";
-
-  7. Optional: GitHub Pages + Vercel
-     - You can also serve index.html via GitHub Pages.
-     - Make sure your GitHub Pages URL is listed in allowedOrigins inside api/ask.js
-       so that CORS is not blocked.
-     - Example (already included in the template):
-         "https://educadug.github.io",
-         "https://mrguevaracga.github.io"
-     - Students’ browser → GitHub Pages (index.html) → Vercel /api/ask → Gemini 2.5 Flash.
-
-  8. Customising for your thesis
-     - Edit the Biology, Chemistry, and Physics text blocks so they align with your actual
-       research questions, study sites, and variables.
-     - Reword bullet points into student-friendly language that mirrors your abstract,
-       methods, results, and discussion.
-
-  ========= END OF TEACHER-ONLY COMMENT =========
-  -->
+    DONE! Wait 30 seconds, refresh your live site, and the bot will work!
+    -->
+</body>
 </html>
