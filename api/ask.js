@@ -1,9 +1,24 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  // 1. Setup CORS (Allows your site to talk to this backend)
+  // --- 1. THE GUEST LIST (Allowed URLs) ---
+  // We check who is calling. If it's your GitHub or Localhost, we let them in.
+  const allowedOrigins = [
+    "https://educadug.github.io",       // Your GitHub Page
+    "https://mrguevaracga.github.io",   // Your other GitHub Page (optional)
+    "https://aimee-s-m-mzldiednk-diego-s-projects-f00e31fc.vercel.app", // Your Vercel App
+    "http://localhost:3000",            // Local testing
+    "http://127.0.0.1:5500"             // VS Code Live Server
+  ];
+
+  // Get the origin of the request (who is knocking?)
+  const origin = req.headers.get("origin");
+  
+  // If the origin is on our list, use it. Otherwise, assume it's a direct tool/Postman.
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : "*";
+
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "*", 
+    "Access-Control-Allow-Origin": corsOrigin, 
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
