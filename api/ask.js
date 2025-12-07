@@ -1,57 +1,51 @@
-// api/ask.js - Vercel serverless function
-export default async function handler(req, res) {
-  // --- THE GUEST LIST (Allowed URLs) ---
-  const allowedOrigins = [
-    "https://ls-2-science-revision.vercel.app",   // The Vercel App itself
-    "https://educadug.github.io",                 // GitHub Page 1
-    "https://mrguevaracga.github.io",             // GitHub Page 2
-    "http://localhost:3000"
-  ];
+export const config = { runtime: 'edge' };
 
-  const origin = req.headers.origin || "";
+export default async function handler(req) {
+  // 1. Setup CORS (Allows your site to talk to this backend)
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*", 
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
 
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
+  // 2. Handle the "Pre-flight" check (Browser checking if it's safe to connect)
   if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
-
+  
+  // 3. Block anything that isn't a POST request
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: corsHeaders });
   }
 
   try {
-    const { message } = req.body || {};
-    if (!message) return res.status(400).json({ error: "Missing message" });
+    // 4. Get the message from the website
+    const { message } = await req.json();
+    const apiKey = process.env.GEMINI_API_KEY; 
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: "No GEMINI_API_KEY configured" });
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "Server Error: No API Key found in Vercel Settings." }), { status: 500, headers: corsHeaders });
+    }
 
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-      apiKey;
-
-    const geminiResponse = await fetch(url, {
+    // 5. Send to Google Gemini (Using 2.5 Flash model)
+    const googleResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: message }] }],
-      }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] }),
     });
 
-    const data = await geminiResponse.json();
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "I couldn’t generate a response.";
+    const data = await googleResponse.json();
+    
+    // 6. Check for AI errors
+    if (data.error) {
+       return new Response(JSON.stringify({ error: data.error.message }), { status: 500, headers: corsHeaders });
+    }
 
-    return res.status(200).json({ reply: text });
-  } catch (err) {
-    console.error("Server error:", err);
-    return res.status(500).json({ error: "Server error" });
+    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "AI Error: No response generated.";
+
+    // 7. Send the answer back to the website
+    return new Response(JSON.stringify({ reply: replyText }), { status: 200, headers: corsHeaders });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Internal Server Error: " + error.message }), { status: 500, headers: corsHeaders });
   }
 }
