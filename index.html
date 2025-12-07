@@ -786,7 +786,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        const API_BASE = "https://aimee-s-m-mzldiednk-diego-s-projects-f00e31fc.vercel.app";
+        const API_BASE = "https://aimee-s-m-sc.vercel.app";
 
         async function callGemini(prompt) {
             if (API_BASE.includes("YOUR-VERCEL-APP")) {
@@ -798,8 +798,21 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ message: prompt }),
                 });
-                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
-                const data = await response.json();
+
+                // Try to parse the response as JSON (even if it's an error)
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    // If JSON parsing fails, it might be a raw HTML error (like a Vercel 504/404)
+                    throw new Error(`Server connection failed (${response.status}). Check Vercel logs.`);
+                }
+
+                // If the backend sent an error message, throw it to be displayed
+                if (!response.ok) {
+                    throw new Error(data.error || `Server Error: ${response.status}`);
+                }
+
                 return data.reply;
             } catch (e) {
                 console.error("Gemini Call Failed:", e);
@@ -837,10 +850,16 @@
                 msgs.innerHTML += `<div class="chat-msg bg-moss-light text-moss-deep p-2 rounded-lg text-sm self-start w-3/4 mb-2 shadow-sm prose prose-sm">${cleanReply}</div>`;
             } catch (e) {
                 document.getElementById(loadingId).remove();
-                let errMsg = "Sorry, I can't connect to the forest database right now.";
-                if(e.message.includes("API_BASE")) errMsg = "⚠️ <a href='#bottom' class='underline'>Please set the Vercel URL in the code!</a>";
                 
-                msgs.innerHTML += `<div class="chat-msg bg-red-100 text-red-800 p-2 rounded-lg text-sm self-start w-3/4 mb-2 shadow-sm border border-red-200">${errMsg}</div>`;
+                // Check for specific setup errors
+                let errMsg = e.message;
+                if(e.message.includes("API_BASE")) {
+                    errMsg = "⚠️ Setup Error: Please set the Vercel URL in the code!";
+                } else if (e.message.includes("API Key")) {
+                    errMsg = "⚠️ Missing Key: Add GEMINI_API_KEY in Vercel Settings.";
+                }
+                
+                msgs.innerHTML += `<div class="chat-msg bg-red-100 text-red-800 p-2 rounded-lg text-sm self-start w-3/4 mb-2 shadow-sm border border-red-200 break-words font-bold">${errMsg}</div>`;
             }
             msgs.scrollTop = msgs.scrollHeight;
         }
