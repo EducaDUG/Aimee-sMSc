@@ -26,7 +26,7 @@
                         },
                         earth: {
                             DEFAULT: '#78350f', // Brown
-                            light: '#fefce8',   // Light Yellow/Beige (Fixed from f5f5dc for tailwind compat)
+                            light: '#fefce8',   // Light Yellow/Beige
                         },
                         gold: {
                             DEFAULT: '#fbbf24',
@@ -147,7 +147,7 @@
         }
 
         /* Modal Overlay */
-        #research-modal {
+        #research-modal, #sites-modal {
             background-color: rgba(0,0,0,0.7);
             backdrop-filter: blur(5px);
         }
@@ -231,10 +231,11 @@
                         </div>
 
                         <div class="flex gap-4">
-                            <button onclick="switchTab('intro')" class="card-3d bg-moss-DEFAULT text-white px-8 py-4 rounded-xl font-bold text-lg w-full md:w-auto hover:bg-moss-light">
+                            <!-- CHANGED: Made background darker (moss-deep) for better contrast -->
+                            <button onclick="switchTab('intro')" class="card-3d bg-moss-deep text-white px-8 py-4 rounded-xl font-bold text-lg w-full md:w-auto hover:bg-moss-dark transition-colors border-2 border-transparent">
                                 Start Exploring <i class="fa-solid fa-arrow-right ml-2"></i>
                             </button>
-                            <button onclick="toggleChat()" class="card-3d bg-white text-moss-deep border-2 border-moss-deep px-6 py-4 rounded-xl font-bold w-full md:w-auto hover:bg-green-50">
+                            <button onclick="toggleChat()" class="card-3d bg-white text-moss-deep border-2 border-moss-deep px-6 py-4 rounded-xl font-bold w-full md:w-auto hover:bg-green-50 transition-colors">
                                 Ask AI Bot <i class="fa-solid fa-robot ml-2"></i>
                             </button>
                         </div>
@@ -251,11 +252,14 @@
                         <h3 class="font-bold text-xl">Transitional Forestry</h3>
                         <p class="text-sm text-gray-700">Using exotic trees as a nursery.</p>
                     </div>
-                    <div class="bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 transition duration-300 border-2 border-gray-100">
-                        <i class="fa-solid fa-magnifying-glass text-4xl text-moss-DEFAULT mb-2"></i>
-                        <h3 class="font-bold text-xl">18 Plots</h3>
-                        <p class="text-sm text-gray-600">Surveyed across Otago.</p>
+                    
+                    <!-- CHANGED: Made clickable "18 Plots" card -->
+                    <div onclick="openSitesModal()" class="cursor-pointer bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 hover:scale-105 transition duration-300 border-2 border-gray-100 hover:border-moss-DEFAULT group">
+                        <i class="fa-solid fa-map-location-dot text-4xl text-moss-DEFAULT mb-2 group-hover:animate-bounce"></i>
+                        <h3 class="font-bold text-xl group-hover:underline">18 Plots</h3>
+                        <p class="text-sm text-gray-600">Click to view map locations</p>
                     </div>
+
                     <div class="bg-moss-light text-moss-deep p-6 rounded-2xl shadow-lg transform rotate-2 hover:rotate-0 transition duration-300 mt-8 border-2 border-green-300">
                         <i class="fa-solid fa-water text-4xl text-white mb-2"></i>
                         <h3 class="font-bold text-xl">Bryophytes</h3>
@@ -626,6 +630,76 @@
         </div>
     </div>
 
+    <!-- SITES MODAL (New Feature) -->
+    <div id="sites-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeSitesModal()"></div>
+        <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl p-0 relative max-h-[90vh] flex flex-col overflow-hidden animate-[popIn_0.3s_ease-out]">
+            
+            <!-- Header -->
+            <div class="bg-moss-deep text-white p-6 flex justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-bold"><i class="fa-solid fa-map mr-2 text-gold-DEFAULT"></i> Study Locations</h3>
+                    <p class="text-green-200 text-sm">18 plots across 7 sites in Otago, New Zealand</p>
+                </div>
+                <button onclick="closeSitesModal()" class="text-white hover:text-red-300 text-2xl transition">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto bg-gray-50 flex-1">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Site List -->
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-moss-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">1. Orokonui Ecosanctuary</h4>
+                            <p class="text-sm text-gray-600">Coastal forest. <strong>Canopy:</strong> Kānuka vs Eucalyptus.</p>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mt-2 inline-block">Native Seed Source: High</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-gold-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">2. Saddle Hill</h4>
+                            <p class="text-sm text-gray-600">Private land. <strong>Canopy:</strong> 5 types (Pine, Poplar, Cypress, Gum, Kānuka).</p>
+                            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded mt-2 inline-block">Diverse Management</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-moss-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">3. Cedar Creek</h4>
+                            <p class="text-sm text-gray-600">Near reservoir. <strong>Canopy:</strong> Pine vs Mānuka.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-moss-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">4. Flagstaff</h4>
+                            <p class="text-sm text-gray-600">DCC Reserve. <strong>Canopy:</strong> Douglas Fir vs Mānuka.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-earth hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">5. Rankleburn</h4>
+                            <p class="text-sm text-gray-600">Deep gullies. <strong>Canopy:</strong> Pine/Fir vs Red Beech (Fuscospora).</p>
+                            <span class="text-xs bg-amber-100 text-gray-800 px-2 py-1 rounded mt-2 inline-block">Old Forestry Site</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-moss-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">6. Ross Creek</h4>
+                            <p class="text-sm text-gray-600">City reservoir. <strong>Canopy:</strong> Douglas Fir vs Red Beech.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-moss-DEFAULT hover:shadow-md transition">
+                            <h4 class="font-bold text-lg text-moss-deep">7. Silverpeaks</h4>
+                            <p class="text-sm text-gray-600">High altitude. <strong>Canopy:</strong> Douglas Fir vs Mānuka.</p>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                            <h5 class="font-bold text-blue-800 text-sm mb-2"><i class="fa-solid fa-info-circle"></i> Plot Design</h5>
+                            <p class="text-xs text-blue-700">Each plot is 125m x 60m. All exotic plots are located within 300m of a native forest seed source to ensure fair regeneration chances.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 p-4 flex justify-end">
+                <button onclick="closeSitesModal()" class="bg-gray-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-black transition">Close Map</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Chat Widget -->
     <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         <!-- Chat Box -->
@@ -660,18 +734,35 @@
             // Hide all sections
             const sections = ['home', 'intro', 'methods', 'results', 'simulator', 'discussion', 'quiz'];
             sections.forEach(s => {
-                document.getElementById(s).classList.add('section-hidden');
-                document.getElementById(s).classList.remove('section-active');
+                const el = document.getElementById(s);
+                if (el) {
+                    el.classList.add('section-hidden');
+                    el.classList.remove('section-active');
+                }
             });
 
             // Show selected
             const activeSection = document.getElementById(tabId);
-            activeSection.classList.remove('section-hidden');
-            activeSection.classList.add('section-active');
+            if (activeSection) {
+                activeSection.classList.remove('section-hidden');
+                activeSection.classList.add('section-active');
+            }
 
             // Update Nav Buttons
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-' + tabId).classList.add('active');
+            const btn = document.getElementById('btn-' + tabId);
+            if(btn) btn.classList.add('active');
+        }
+
+        // --- SITES MODAL LOGIC ---
+        function openSitesModal() {
+            document.getElementById('sites-modal').classList.remove('hidden');
+            document.getElementById('sites-modal').classList.add('flex');
+        }
+
+        function closeSitesModal() {
+            document.getElementById('sites-modal').classList.add('hidden');
+            document.getElementById('sites-modal').classList.remove('flex');
         }
 
         // Chat Logic
@@ -695,7 +786,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        const API_BASE = "https://YOUR-VERCEL-APP.vercel.app"; // PLACEHOLDER - USER TO REPLACE
+        const API_BASE = "https://aimee-s-m-mzldiednk-diego-s-projects-f00e31fc.vercel.app";
 
         async function callGemini(prompt) {
             if (API_BASE.includes("YOUR-VERCEL-APP")) {
