@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bryology Thesis Explorer – Science with Diego</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- AOS (Animate On Scroll) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+  />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --deep-red: #990000;
+      --dark-red: #7a0000;
+      --gold: #ffc107;
+      --bg-soft: #f5f5f7;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(153, 0, 0, 0.08), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(255, 193, 7, 0.12), transparent 55%),
+        var(--bg-soft);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .nav-tab {
+      border-radius: 9999px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, var(--deep-red), var(--dark-red));
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .nav-tab:not(.active):hover {
+      background: rgba(255, 255, 255, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .card-3d {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      transform: translateY(0) translateZ(0);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-3d:hover {
+      transform: translateY(-6px) translateZ(0);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 193, 7, 0.7);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Flip Cards */
+    .flip-card {
+      background-color: transparent;
+      width: 100%;
+      height: 180px;
+      perspective: 1000px;
+    }
+
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      border-radius: 1.25rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+    }
+
+    .flip-card:hover .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-front, .flip-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .flip-front {
+      background: linear-gradient(135deg, rgba(153, 0, 0, 0.95), rgba(122, 0, 0, 0.95));
+      color: white;
+    }
+
+    .flip-back {
+      background: white;
+      color: #111827;
+      transform: rotateY(180deg);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    /* Accordions */
+    .accordion-header {
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .accordion-header:hover {
+      background: rgba(148, 163, 184, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .accordion-body {
+      display: none;
+    }
+
+    .accordion-body.open {
+      display: block;
+    }
+
+    /* Chatbot Widget */
+    #chatWidgetToggle {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 50;
+    }
+
+    #chatWidgetPanel {
+      position: fixed;
+      bottom: 5.2rem;
+      right: 1.5rem;
+      width: 340px;
+      max-height: 520px;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      background: white;
+      display: none;
+      z-index: 50;
+    }
+
+    #chatWidgetPanel.open {
+      display: flex;
+    }
+
+    .chat-bubble {
+      border-radius: 1.2rem;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      max-width: 90%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .chat-bubble.user {
+      background: #fee2e2;
+      align-self: flex-end;
+    }
+
+    .chat-bubble.bot {
+      background: #f3f4ff;
+      align-self: flex-start;
+    }
+
+    /* Quick Fire MCQ */
+    .mcq-option {
+      border-radius: 9999px;
+      padding: 0.5rem 0.9rem;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.15s ease;
+    }
+
+    .mcq-option:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .mcq-option.correct {
+      background: #dcfce7;
+      border-color: #16a34a;
+    }
+
+    .mcq-option.incorrect {
+      background: #fee2e2;
+      border-color: #b91c1c;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-900">
+  <div class="max-w-6xl mx-auto px-4 md:px-6 pb-24 pt-6">
+    <!-- Nav -->
+    <nav class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-[var(--deep-red)] to-[var(--gold)] flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-seedling text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">
+            Science with Diego – Bryology Thesis
+          </h1>
+          <p class="text-xs text-slate-500">
+            Turning a Master’s thesis about mosses into bite-sized science for teens.
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="nav-tab active" data-tab="homeTab">
+          <i class="fa-solid fa-house-chimney mr-1.5"></i> Home
+        </button>
+        <button class="nav-tab" data-tab="biologyTab">
+          <i class="fa-solid fa-dna mr-1.5"></i> Biology
+        </button>
+        <button class="nav-tab" data-tab="chemistryTab">
+          <i class="fa-solid fa-flask mr-1.5"></i> Chemistry
+        </button>
+        <button class="nav-tab" data-tab="physicsTab">
+          <i class="fa-solid fa-atom mr-1.5"></i> Physics
+        </button>
+        <button class="nav-tab" data-tab="quickfireTab">
+          <i class="fa-solid fa-bolt mr-1.5"></i> Quick Fire
+        </button>
+      </div>
+    </nav>
+
+    <!-- HOME TAB -->
+    <section id="homeTab" class="tab-panel active">
+      <div class="grid md:grid-cols-[3fr,2fr] gap-6 items-stretch">
+        <div class="card-3d p-6 md:p-8" data-aos="fade-right">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-medium mb-4">
+            <i class="fa-solid fa-microscope"></i>
+            <span>Master’s Thesis → School Science</span>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-extrabold mb-3 text-slate-900">
+            Bryology Thesis Explorer 🌿
+          </h2>
+          <p class="text-sm md:text-base text-slate-600 mb-4">
+            This revision hub translates a Master’s thesis on <span class="font-semibold">bryophytes</span>
+            (mosses and their relatives) into simple, exam-style science for 13–16-year-olds.
+          </p>
+          <ol class="space-y-2 text-sm text-slate-700 mb-5 list-decimal list-inside">
+            <li><span class="font-semibold">Pick a tab</span> – Biology for the moss story, Chemistry for water & pH, Physics for light & energy.</li>
+            <li><span class="font-semibold">Flip the cards</span> to learn key terms from the thesis.</li>
+            <li><span class="font-semibold">Open the accordions</span> for step-by-step processes and methods.</li>
+            <li><span class="font-semibold">Use Quick Fire</span> to quiz yourself or let AI create a mystery question.</li>
+          </ol>
+          <div class="flex flex-wrap gap-3 items-center">
+            <button
+              onclick="openChatWidget()"
+              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] shadow-lg shadow-red-900/30 hover:shadow-xl hover:translate-y-[-1px] transition"
+            >
+              <i class="fa-solid fa-robot"></i>
+              Ask Bryologist Bot
+            </button>
+            <button
+              onclick="scrollToSection('quickfireTab')"
+              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold bg-white/80 border border-slate-200 hover:bg-white shadow-md"
+            >
+              <i class="fa-solid fa-bolt"></i>
+              Jump to Quick Fire
+            </button>
+          </div>
+          <div class="mt-6 border-t border-slate-200 pt-4 text-xs text-slate-500">
+            Tip for Diego: use the Biology tab text to mirror your thesis abstract in student-friendly language.
+          </div>
+        </div>
+
+        <div class="grid gap-4" data-aos="fade-left">
+          <button
+            onclick="showTab('biologyTab')"
+            class="card-3d p-4 flex flex-col items-start text-left bg-gradient-to-br from-white to-amber-50"
+          >
+            <div class="flex items-center justify-between w-full mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">Biology</span>
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-amber-100">
+                <i class="fa-solid fa-seedling text-amber-700"></i>
+              </span>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-1">Bryophyte Basics</h3>
+            <p class="text-xs text-slate-600">
+              What mosses are, how they live, and why your thesis cares about them.
+            </p>
+          </button>
+
+          <button
+            onclick="showTab('chemistryTab')"
+            class="card-3d p-4 flex flex-col items-start text-left"
+          >
+            <div class="flex items-center justify-between w-full mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">Chemistry</span>
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-sky-100">
+                <i class="fa-solid fa-flask text-sky-700"></i>
+              </span>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-1">Water, Acidity & Nutrients</h3>
+            <p class="text-xs text-slate-600">
+              Explore pH, dissolved ions, and how they affect moss health in the thesis.
+            </p>
+          </button>
+
+          <button
+            onclick="showTab('physicsTab')"
+            class="card-3d p-4 flex flex-col items-start text-left"
+          >
+            <div class="flex items-center justify-between w-full mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-700">Physics</span>
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-2xl bg-indigo-100">
+                <i class="fa-solid fa-sun text-indigo-700"></i>
+              </span>
+            </div>
+            <h3 class="font-bold text-slate-900 mb-1">Light & Microclimate</h3>
+            <p class="text-xs text-slate-600">
+              Link light, temperature, and moisture to bryophyte growth and patterns.
+            </p>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BIOLOGY TAB -->
+    <section id="biologyTab" class="tab-panel">
+      <div class="grid md:grid-cols-[3fr,2fr] gap-6 mt-4">
+        <!-- Left: content -->
+        <div class="space-y-4">
+          <div class="card-3d p-5 md:p-6" data-aos="fade-up">
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-2">
+              The Thesis Story: Life in the Moss World 🌿
+            </h2>
+            <p class="text-sm text-slate-700 mb-1">
+              Your Master’s thesis explores <span class="font-semibold">bryophytes</span> – tiny, non-vascular plants like mosses and liverworts – as clues about their
+              environment. They don’t have true roots or flowers, but they are <span class="font-semibold">excellent bio-indicators</span>:
+            </p>
+            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+              <li>They absorb water and nutrients directly over their surfaces.</li>
+              <li>They react quickly when water, light, or pollution levels change.</li>
+              <li>They can show patterns of <span class="font-semibold">microclimate</span> and <span class="font-semibold">air quality</span> over time.</li>
+            </ul>
+            <p class="text-sm text-slate-700 mt-2">
+              Replace these bullet points with the <span class="font-semibold">exact aims</span> of your thesis (e.g. “to see how moss cover changes
+              with air pollution in urban parks”).
+            </p>
+          </div>
+
+          <!-- Flip cards -->
+          <div class="grid sm:grid-cols-2 gap-4" data-aos="fade-up">
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">Bryophyte</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    Group of simple, non-vascular plants, including mosses, liverworts, and hornworts. No true roots, stems, or leaves.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">Gametophyte</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    The “main moss plant” you see – the haploid, green stage that makes gametes (sperm and eggs).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">Sporophyte</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    A stalk and capsule growing from the gametophyte. Produces spores for dispersal; depends on the gametophyte for food.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">Bio-indicator</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    A living organism that shows how healthy an environment is. Changes in mosses can signal pollution or climate shifts.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Biology process accordions -->
+          <div class="card-3d p-5 space-y-3" data-aos="fade-up">
+            <h3 class="font-semibold text-lg text-slate-900">
+              Key Processes from the Thesis
+            </h3>
+
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
+                <span class="text-sm font-semibold text-slate-800">1. Bryophyte life cycle (simplified)</span>
+                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
+              </button>
+              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Spores are released from the capsule of the sporophyte.</li>
+                  <li>Each spore can grow into a young gametophyte plant in a damp place.</li>
+                  <li>The gametophyte makes sperm and eggs in tiny structures.</li>
+                  <li>Water allows sperm to swim to the egg and fertilise it.</li>
+                  <li>A new sporophyte grows out of the gametophyte, and the cycle continues.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
+                <span class="text-sm font-semibold text-slate-800">2. How the thesis samples moss</span>
+                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
+              </button>
+              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Select different sites (e.g. shady vs sunny, polluted vs clean).</li>
+                  <li>Use quadrats or transects to record moss cover and species.</li>
+                  <li>Measure microclimate (light, temperature, humidity) at each site.</li>
+                  <li>Compare patterns: where does moss thrive or struggle?</li>
+                </ol>
+                <p class="mt-1 text-xs text-slate-500">
+                  → Replace with your exact sampling design and variables.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: interactive -->
+        <div class="space-y-4">
+          <!-- Biology interactive chart -->
+          <div class="card-3d p-4 md:p-5" data-aos="fade-left">
+            <h3 class="font-semibold mb-1 text-slate-900">Moisture vs. Moss Health</h3>
+            <p class="text-xs text-slate-600 mb-3">
+              Move the slider to model how moss “happiness” changes with moisture, like in your thesis sites.
+            </p>
+            <input
+              id="moistureSlider"
+              type="range"
+              min="0"
+              max="100"
+              value="60"
+              class="w-full mb-2 accent-[var(--deep-red)]"
+            />
+            <div class="flex justify-between text-xs text-slate-500 mb-3">
+              <span>Dry</span><span>Medium</span><span>Soaked</span>
+            </div>
+            <p class="text-xs text-slate-700 mb-3">
+              Estimated moss health: <span id="moistureStatus" class="font-semibold text-[var(--deep-red)]">Happy</span>
+            </p>
+            <canvas id="bryophyteMoistureChart" class="mt-1"></canvas>
+          </div>
+
+          <!-- AI Audio & Analogy -->
+          <div class="card-3d p-4 md:p-5 space-y-3" data-aos="fade-left">
+            <h3 class="font-semibold text-slate-900">
+              AI Help: Bryology Audio & Analogies
+            </h3>
+            <div class="flex flex-col gap-2 text-xs text-slate-700">
+              <label for="audioTopicInput" class="font-medium text-slate-800">
+                Topic (e.g. “bryophyte life cycle”, “moss as bio-indicator”):
+              </label>
+              <input
+                id="audioTopicInput"
+                type="text"
+                class="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
+                placeholder="bryophyte life cycle"
+              />
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                onclick="handleAudioLesson()"
+                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-[var(--deep-red)] hover:bg-[var(--dark-red)] shadow-md"
+              >
+                <i class="fa-solid fa-headphones"></i>
+                Listen &amp; Learn
+              </button>
+              <button
+                onclick="handleAnalogy()"
+                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50"
+              >
+                <i class="fa-solid fa-lightbulb"></i>
+                Explain with Analogy
+              </button>
+            </div>
+            <div class="border-t border-slate-200 pt-2">
+              <p id="audioTextOutput" class="text-xs text-slate-700 mb-2"></p>
+              <div id="analogyOutput" class="text-xs text-slate-700"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHEMISTRY TAB -->
+    <section id="chemistryTab" class="tab-panel">
+      <div class="grid md:grid-cols-[2fr,3fr] gap-6 mt-4">
+        <div class="space-y-4">
+          <div class="card-3d p-5" data-aos="fade-up">
+            <h2 class="text-xl font-bold text-slate-900 mb-2">
+              Chemistry: Water, pH & Moss Health 💧
+            </h2>
+            <p class="text-sm text-slate-700 mb-2">
+              Many bryology theses measure <span class="font-semibold">pH</span> and dissolved ions. Acidic rain, road spray, or nutrients from
+              farming can all change the chemistry around mosses.
+            </p>
+            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1 mb-2">
+              <li><span class="font-semibold">pH</span> tells us how acidic or alkaline the water is.</li>
+              <li>Moss species often prefer a certain pH range.</li>
+              <li>Ion levels (like nitrate or heavy metals) can show pollution.</li>
+            </ul>
+            <p class="text-xs text-slate-500">
+              Tip: update the bullet points with the <span class="font-semibold">exact chemical variables</span> from your thesis.
+            </p>
+          </div>
+
+          <div class="grid gap-3" data-aos="fade-up">
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">pH</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    A scale from 0 to 14 showing how acidic or alkaline a solution is. 7 is neutral, below 7 is acidic.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="flip-card">
+              <div class="flip-inner">
+                <div class="flip-front">
+                  <h3 class="font-semibold text-lg mb-1">Ion</h3>
+                  <p class="text-xs text-amber-100">Flip me!</p>
+                </div>
+                <div class="flip-back">
+                  <p class="text-sm">
+                    An atom or molecule with an electric charge (e.g. NO₃⁻, Ca²⁺). Important in water chemistry for mosses.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chemistry interactive -->
+        <div class="space-y-4">
+          <div class="card-3d p-5" data-aos="fade-left">
+            <h3 class="font-semibold text-slate-900 mb-1">Interactive pH Explorer</h3>
+            <p class="text-xs text-slate-600 mb-3">
+              Drag the slider to see how water pH might affect bryophyte stress.
+            </p>
+            <input
+              id="phSlider"
+              type="range"
+              min="0"
+              max="14"
+              value="6"
+              class="w-full mb-2 accent-[var(--deep-red)]"
+            />
+            <div class="flex justify-between text-xs text-slate-500 mb-2">
+              <span>0 (Strong acid)</span><span>7 (Neutral)</span><span>14 (Strong alkali)</span>
+            </div>
+            <p class="text-xs text-slate-700 mb-1">
+              pH value: <span id="phValue" class="font-semibold">6</span>
+            </p>
+            <p class="text-xs text-slate-700 mb-2">
+              Moss reaction: <span id="phInterpretation" class="font-semibold text-[var(--deep-red)]">Comfort zone for many species</span>
+            </p>
+            <canvas id="phChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHYSICS TAB -->
+    <section id="physicsTab" class="tab-panel">
+      <div class="grid md:grid-cols-[3fr,2fr] gap-6 mt-4">
+        <div class="space-y-4">
+          <div class="card-3d p-5" data-aos="fade-up">
+            <h2 class="text-xl font-bold text-slate-900 mb-2">
+              Physics: Light, Energy & Microclimate ☀️
+            </h2>
+            <p class="text-sm text-slate-700 mb-2">
+              Your thesis may link moss patterns to <span class="font-semibold">light intensity, temperature, and humidity</span>.
+              These are physical factors that change how much energy mosses can capture and how quickly they dry out.
+            </p>
+            <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+              <li>Too little light → not enough energy for photosynthesis.</li>
+              <li>Too much light & heat → moss dries out and shuts down.</li>
+              <li>Protected microhabitats (like rock cracks) balance light and moisture.</li>
+            </ul>
+          </div>
+
+          <!-- Physics accordions -->
+          <div class="card-3d p-5 space-y-3" data-aos="fade-up">
+            <h3 class="font-semibold text-lg text-slate-900">Field Microclimate Steps</h3>
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+              <button class="w-full flex justify-between items-center px-4 py-3 accordion-header">
+                <span class="text-sm font-semibold text-slate-800">Measuring light and temperature</span>
+                <i class="fa-solid fa-chevron-down text-xs text-slate-500"></i>
+              </button>
+              <div class="accordion-body px-4 pb-3 text-sm text-slate-700">
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Place a light meter at moss height at each sample point.</li>
+                  <li>Record light intensity (lux) and temperature.</li>
+                  <li>Link these data to moss cover or species in your analysis.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Physics calculator -->
+        <div class="space-y-4">
+          <div class="card-3d p-5" data-aos="fade-left">
+            <h3 class="font-semibold text-slate-900 mb-1">
+              Simple Physics: Weight of Water on Moss
+            </h3>
+            <p class="text-xs text-slate-600 mb-3">
+              Estimate the force of water on a moss patch after rain. Imagine 1&nbsp;cm of water sitting on top.
+            </p>
+            <div class="space-y-2 text-xs">
+              <label class="font-medium text-slate-800" for="areaInput">
+                Moss patch area (m²):
+              </label>
+              <input
+                id="areaInput"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0.2"
+                class="w-full rounded-xl border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
+              />
+              <p class="text-[11px] text-slate-500">
+                (e.g. 0.2 m² ≈ square of ~45 cm by 45 cm)
+              </p>
+            </div>
+            <button
+              onclick="calculateWaterWeight()"
+              class="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-[var(--deep-red)] hover:bg-[var(--dark-red)] shadow-md"
+            >
+              <i class="fa-solid fa-calculator"></i>
+              Calculate weight force
+            </button>
+            <div class="mt-3 text-xs text-slate-700">
+              <p>Estimated water mass: <span id="waterMass" class="font-semibold">2.0 kg</span></p>
+              <p>Weight force (Earth): <span id="waterForce" class="font-semibold">≈ 19.6 N</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK FIRE TAB -->
+    <section id="quickfireTab" class="tab-panel">
+      <div class="mt-4 grid md:grid-cols-[3fr,2fr] gap-6">
+        <div class="card-3d p-5 md:p-6" data-aos="fade-up">
+          <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">
+            Quick Fire Revision 🔥
+          </h2>
+          <p class="text-sm text-slate-700 mb-4">
+            Use these quick questions to check understanding of the thesis. Try covering the answer with your hand first.
+          </p>
+
+          <div class="space-y-3 text-sm">
+            <div class="border border-slate-200 rounded-2xl p-3">
+              <p class="font-semibold text-slate-900">1. What is a bryophyte?</p>
+              <p class="text-slate-600 text-xs mt-1">
+                A simple, non-vascular plant such as a moss, liverwort, or hornwort.
+              </p>
+            </div>
+            <div class="border border-slate-200 rounded-2xl p-3">
+              <p class="font-semibold text-slate-900">2. Why are mosses useful as bio-indicators?</p>
+              <p class="text-slate-600 text-xs mt-1">
+                Their tissues absorb water and pollutants directly, so they respond quickly to changes in the environment.
+              </p>
+            </div>
+            <div class="border border-slate-200 rounded-2xl p-3">
+              <p class="font-semibold text-slate-900">3. Name one abiotic factor your thesis measures.</p>
+              <p class="text-slate-600 text-xs mt-1">
+                Possible answers: light intensity, temperature, humidity, pH, pollutant concentration (edit to match your study).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Quick Fire -->
+        <div class="card-3d p-5 space-y-3" data-aos="fade-left">
+          <h3 class="font-semibold text-slate-900">
+            AI Mystery Question ✨
+          </h3>
+          <p class="text-xs text-slate-700">
+            Let Bryologist Bot create a single multiple-choice question based on your thesis topics.
+          </p>
+          <div class="space-y-2 text-xs">
+            <label for="quickfireTopicInput" class="font-medium text-slate-800">
+              Topic for AI (e.g. “bryophytes as bio-indicators”):
+            </label>
+            <input
+              id="quickfireTopicInput"
+              type="text"
+              class="w-full rounded-xl border border-slate-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
+              placeholder="bryophytes as bio-indicators"
+            />
+          </div>
+          <button
+            onclick="generateMysteryQuestion()"
+            class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] shadow-md"
+          >
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Generate AI Mystery Question ✨
+          </button>
+
+          <div id="mysteryQuestionArea" class="mt-3 text-xs text-slate-800 space-y-2">
+            <!-- Question + options injected here -->
+          </div>
+          <p id="mysteryFeedback" class="text-xs text-slate-600"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Floating Chatbot Toggle -->
+  <button
+    id="chatWidgetToggle"
+    onclick="toggleChatWidget()"
+    class="rounded-full px-4 py-2 text-sm font-semibold bg-gradient-to-r from-[var(--deep-red)] to-[var(--dark-red)] text-white shadow-xl flex items-center gap-2 hover:scale-105 transition"
+  >
+    <i class="fa-solid fa-robot"></i>
+    Bryologist Bot
+  </button>
+
+  <!-- Chatbot Panel -->
+  <div
+    id="chatWidgetPanel"
+    class="flex flex-col bg-white"
+  >
+    <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-slate-900">
+          Bryologist Bot
+        </p>
+        <p class="text-[11px] text-slate-500">
+          AI helper – not the real Diego. Ask short science questions.
+        </p>
+      </div>
+      <button
+        onclick="toggleChatWidget()"
+        class="rounded-full w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200"
+      >
+        <i class="fa-solid fa-xmark text-xs text-slate-600"></i>
+      </button>
+    </div>
+    <div
+      id="chatMessages"
+      class="flex-1 flex flex-col gap-1 px-3 py-3 overflow-y-auto text-xs"
+    >
+      <div class="chat-bubble bot">
+        Hi! I’m Bryologist Bot 🤖🌿. I explain Diego’s thesis in simple science. What are you curious about?
+      </div>
+    </div>
+    <form
+      id="chatForm"
+      class="px-3 py-2 border-t border-slate-200 flex items-center gap-2"
+    >
+      <input
+        id="chatInput"
+        type="text"
+        class="flex-1 rounded-full border border-slate-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--deep-red)]"
+        placeholder="Ask about mosses, pH, microclimate..."
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        class="rounded-full w-8 h-8 flex items-center justify-center bg-[var(--deep-red)] hover:bg-[var(--dark-red)] text-white text-xs"
+      >
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- AOS JS -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+  <script>
+    // 1) Where the Vercel backend lives
+    const API_BASE = "https://YOUR-VERCEL-APP.vercel.app"; // Replace with your own Vercel URL
+
+    // 2) Helper to call Gemini through the backend
+    async function callGemini(prompt) {
+      try {
+        const response = await fetch(\`\${API_BASE}/api/ask\`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: prompt }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || response.statusText);
+        return data.reply || "No response.";
+      } catch (e) {
+        console.error("Gemini call error:", e);
+        return \`Error: \${e.message}\`;
+      }
+    }
+
+    // Tab handling
+    function showTab(tabId) {
+      document.querySelectorAll(".tab-panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === tabId);
+      });
+      document.querySelectorAll(".nav-tab").forEach((btn) => {
+        btn.classList.toggle(
+          "active",
+          btn.getAttribute("data-tab") === tabId
+        );
+      });
+
+      // Scroll to top of content on mobile
+      const container = document.getElementById(tabId);
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        if (window.innerWidth < 768 && rect.top > 0) {
+          window.scrollTo({ top: rect.top + window.scrollY - 80, behavior: "smooth" });
+        }
+      }
+    }
+
+    function scrollToSection(tabId) {
+      showTab(tabId);
+    }
+
+    // Chatbot widget
+    function toggleChatWidget() {
+      const panel = document.getElementById("chatWidgetPanel");
+      panel.classList.toggle("open");
+    }
+
+    function openChatWidget() {
+      const panel = document.getElementById("chatWidgetPanel");
+      if (!panel.classList.contains("open")) {
+        panel.classList.add("open");
+      }
+    }
+
+    function appendChatMessage(text, isUser) {
+      const chat = document.getElementById("chatMessages");
+      const bubble = document.createElement("div");
+      bubble.classList.add("chat-bubble", isUser ? "user" : "bot");
+      // Use marked for bot messages, plain text for user
+      if (isUser) {
+        bubble.textContent = text;
+      } else {
+        bubble.innerHTML = marked.parse(text || "");
+      }
+      chat.appendChild(bubble);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function handleChatSubmit(event) {
+      event.preventDefault();
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = "";
+      appendChatMessage(msg, true);
+
+      const prompt =
+        "You are Bryologist Bot, a fun AI version of teacher Diego. " +
+        "You are a bot, not the real teacher. Explain science for a 14-year-old, " +
+        "use simple language and a few emojis, and keep answers short. " +
+        "Question: " + msg;
+
+      const reply = await callGemini(prompt);
+      appendChatMessage(reply, false);
+    }
+
+    // AI Audio & Analogy
+    async function generateAudioLesson(topic) {
+      const prompt =
+        "You are a fun science teacher explaining " +
+        topic +
+        " to a 14-year-old. Max 80 words. " +
+        "End with a ‘Secret Tip’. Plain text only.";
+      const text = await callGemini(prompt);
+      return text;
+    }
+
+    async function explainWithAnalogy(topic) {
+      const prompt =
+        "Explain " +
+        topic +
+        " using a fun analogy for a 14-year-old. Max 2 sentences.";
+      const text = await callGemini(prompt);
+      return text;
+    }
+
+    async function handleAudioLesson() {
+      const topicInput = document.getElementById("audioTopicInput");
+      const topic = topicInput.value.trim() || "bryophyte life cycle";
+      const output = document.getElementById("audioTextOutput");
+
+      output.textContent = "Loading short audio-style explanation...";
+      const text = await generateAudioLesson(topic);
+      output.textContent = text;
+
+      // Speech synthesis
+      try {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 1;
+          utterance.pitch = 1;
+          window.speechSynthesis.speak(utterance);
+        }
+      } catch (e) {
+        console.error("Speech synthesis error:", e);
+      }
+    }
+
+    async function handleAnalogy() {
+      const topicInput = document.getElementById("audioTopicInput");
+      const topic = topicInput.value.trim() || "bryophyte life cycle";
+      const output = document.getElementById("analogyOutput");
+      output.innerHTML = "<em>Thinking of a good analogy...</em>";
+      const text = await explainWithAnalogy(topic);
+      output.innerHTML = marked.parse(text || "");
+    }
+
+    // Quick Fire AI MCQ
+    function safeJsonParseMaybe(text) {
+      if (!text) return null;
+      // Remove code fences if present
+      let cleaned = text.trim();
+      cleaned = cleaned.replace(/```json/gi, "```");
+      cleaned = cleaned.replace(/```/g, "");
+      // Try to find the first JSON object in the string
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+        return null;
+      }
+      try {
+        const jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error("JSON parse error:", e, cleaned);
+        return null;
+      }
+    }
+
+    function renderMysteryQuestion(obj) {
+      const area = document.getElementById("mysteryQuestionArea");
+      const feedback = document.getElementById("mysteryFeedback");
+      area.innerHTML = "";
+      feedback.textContent = "";
+
+      if (!obj || !obj.question || !Array.isArray(obj.options)) {
+        area.innerHTML = "<p class='text-xs text-red-600'>Sorry, I couldn’t understand the AI question.</p>";
+        return;
+      }
+
+      const q = document.createElement("p");
+      q.className = "font-semibold text-slate-900";
+      q.textContent = obj.question;
+      area.appendChild(q);
+
+      const list = document.createElement("div");
+      list.className = "mt-2 flex flex-col gap-2";
+      area.appendChild(list);
+
+      obj.options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mcq-option text-left";
+        btn.textContent = opt;
+        btn.addEventListener("click", () => {
+          const buttons = area.querySelectorAll(".mcq-option");
+          buttons.forEach((b) => b.classList.remove("correct", "incorrect"));
+          if (index === obj.correctIndex) {
+            btn.classList.add("correct");
+            feedback.textContent = "Nice! That matches the AI key. ✅";
+          } else {
+            btn.classList.add("incorrect");
+            feedback.textContent =
+              "Good try. The correct answer is option " +
+              String.fromCharCode(65 + obj.correctIndex) +
+              ".";
+          }
+        });
+        list.appendChild(btn);
+      });
+    }
+
+    async function generateMysteryQuestion() {
+      const topicInput = document.getElementById("quickfireTopicInput");
+      const topic = topicInput.value.trim() || "bryophytes and microclimate";
+      const area = document.getElementById("mysteryQuestionArea");
+      const feedback = document.getElementById("mysteryFeedback");
+
+      area.innerHTML = "<p class='text-xs text-slate-500'>Asking Bryologist Bot for a question...</p>";
+      feedback.textContent = "";
+
+      const prompt =
+        "Generate 1 multiple-choice question about " +
+        topic +
+        ". Return ONLY raw JSON: { \"question\": \"text\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctIndex\": 0 }. Keep text under 20 words.";
+
+      const reply = await callGemini(prompt);
+      const obj = safeJsonParseMaybe(reply);
+      renderMysteryQuestion(obj);
+    }
+
+    // Moisture chart & slider
+    let moistureChart;
+    function initMoistureChart() {
+      const ctx = document.getElementById("bryophyteMoistureChart");
+      if (!ctx) return;
+      moistureChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["Dry", "Cool & moist", "Very wet"],
+          datasets: [
+            {
+              label: "Relative moss health",
+              data: [20, 90, 40],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 },
+            },
+          },
+        },
+      });
+    }
+
+    function updateMoistureText(value) {
+      const status = document.getElementById("moistureStatus");
+      const v = Number(value);
+      if (v < 25) {
+        status.textContent = "Stressed (too dry)";
+      } else if (v < 55) {
+        status.textContent = "OK but cautious";
+      } else if (v <= 80) {
+        status.textContent = "Happy (ideal moisture)";
+      } else {
+        status.textContent = "Waterlogged (risk of decay)";
+      }
+    }
+
+    // pH chart and slider
+    let phChart;
+    function initPhChart() {
+      const ctx = document.getElementById("phChart");
+      if (!ctx) return;
+      phChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Strong acid", "Moderate", "Neutral", "Moderate alkali", "Strong alkali"],
+          datasets: [
+            {
+              label: "Suitability for moss (generic)",
+              data: [10, 60, 90, 50, 15],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 },
+            },
+          },
+        },
+      });
+    }
+
+    function updatePhInterpretation(value) {
+      const phVal = document.getElementById("phValue");
+      const phText = document.getElementById("phInterpretation");
+      const v = Number(value);
+      phVal.textContent = v.toString();
+      if (v < 4) {
+        phText.textContent = "Very acidic – many mosses stressed.";
+      } else if (v < 6.5) {
+        phText.textContent = "Slightly acidic – comfy for many woodland mosses.";
+      } else if (v <= 7.5) {
+        phText.textContent = "Around neutral – often safe zone.";
+      } else if (v <= 9) {
+        phText.textContent = "Slightly alkaline – some calcicolous species like this.";
+      } else {
+        phText.textContent = "Strong alkali – fewer mosses adapted here.";
+      }
+    }
+
+    // Physics water weight calculator
+    function calculateWaterWeight() {
+      const areaInput = document.getElementById("areaInput");
+      const massOut = document.getElementById("waterMass");
+      const forceOut = document.getElementById("waterForce");
+      const area = Math.max(0, Number(areaInput.value) || 0);
+      const depth = 0.01; // 1 cm of water in meters
+      const volume = area * depth; // m3
+      const densityWater = 1000; // kg/m3
+      const mass = volume * densityWater;
+      const g = 9.8; // m/s2
+      const force = mass * g;
+      massOut.textContent = mass.toFixed(1) + " kg";
+      forceOut.textContent = "≈ " + force.toFixed(1) + " N";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Init AOS
+      if (window.AOS) {
+        AOS.init({ duration: 600, once: true });
+      }
+
+      // Nav tab clicks
+      document.querySelectorAll(".nav-tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tabId = btn.getAttribute("data-tab");
+          if (tabId) showTab(tabId);
+        });
+      });
+
+      // Chat form
+      const chatForm = document.getElementById("chatForm");
+      if (chatForm) {
+        chatForm.addEventListener("submit", handleChatSubmit);
+      }
+
+      // Moisture slider events
+      const moistureSlider = document.getElementById("moistureSlider");
+      if (moistureSlider) {
+        moistureSlider.addEventListener("input", (e) =>
+          updateMoistureText(e.target.value)
+        );
+        updateMoistureText(moistureSlider.value);
+      }
+
+      // pH slider events
+      const phSlider = document.getElementById("phSlider");
+      if (phSlider) {
+        phSlider.addEventListener("input", (e) =>
+          updatePhInterpretation(e.target.value)
+        );
+        updatePhInterpretation(phSlider.value);
+      }
+
+      // Init charts
+      initMoistureChart();
+      initPhChart();
+
+      // Initial physics calculation
+      calculateWaterWeight();
+    });
+  </script>
+
+  <!--
+  ========= TEACHER-ONLY BACKEND & DEPLOYMENT GUIDE (NOT VISIBLE TO STUDENTS) =========
+
+  1. Get a Gemini API key
+     - Go to Google AI Studio (search: "Google AI Studio gemini").
+     - Sign in with a Google account.
+     - Create an API key for the Gemini 2.5 Flash model.
+     - Copy the key – you will paste it into Vercel later as GEMINI_API_KEY.
+
+  2. GitHub repository structure
+     - Create a GitHub repo (for example: ls-2-bryology-revision).
+     - At the root of the repo, place this file as: index.html
+     - Also at the root, create a folder named: api
+     - Inside the api folder, create a file: ask.js
+     - Final structure:
+
+       / (repo root)
+       ├─ index.html
+       └─ api/
+          └─ ask.js
+
+  3. Exact backend code for api/ask.js (Golden Pattern)
+     - Paste the code below into api/ask.js.
+     - Update the allowedOrigins array if your domains are different.
+
+  ------------------- BEGIN api/ask.js -------------------
+
+  // api/ask.js - Vercel serverless function
+  export default async function handler(req, res) {
+    // --- THE GUEST LIST (Allowed URLs) ---
+    const allowedOrigins = [
+      "https://ls-2-science-revision.vercel.app",   // The Vercel App itself
+      "https://educadug.github.io",                 // GitHub Page 1
+      "https://mrguevaracga.github.io",             // GitHub Page 2
+      "http://localhost:3000"
+    ];
+
+    const origin = req.headers.origin || "";
+
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+      res.status(200).end();
+      return;
+    }
+
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    try {
+      const { message } = req.body || {};
+      if (!message) return res.status(400).json({ error: "Missing message" });
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) return res.status(500).json({ error: "No GEMINI_API_KEY configured" });
+
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+
+      const geminiResponse = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: message }] }],
+        }),
+      });
+
+      const data = await geminiResponse.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn’t generate a response.";
+
+      return res.status(200).json({ reply: text });
+    } catch (err) {
+      console.error("Server error:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  ------------------- END api/ask.js -------------------
+
+  4. Deploy with Vercel
+     - Go to vercel.com and sign in (GitHub integration makes this easiest).
+     - Click "Add New Project" → "Import Git Repository".
+     - Choose the repo containing this index.html and api/ask.js.
+     - Vercel should automatically detect the /api folder as serverless functions.
+
+  5. Set the GEMINI_API_KEY environment variable
+     - In your Vercel project dashboard, open "Settings" → "Environment Variables".
+     - Add a new variable:
+         Name: GEMINI_API_KEY
+         Value: (paste your Gemini API key from AI Studio)
+     - Save and redeploy the project (Vercel may redeploy automatically).
+
+  6. Update API_BASE in index.html
+     - After deployment, you’ll get a URL like:
+         https://ls-2-science-revision.vercel.app
+     - In this index.html, find:
+         const API_BASE = "https://YOUR-VERCEL-APP.vercel.app";
+       and replace it with your URL, for example:
+         const API_BASE = "https://ls-2-science-revision.vercel.app";
+
+  7. Optional: GitHub Pages + Vercel
+     - You can also serve index.html via GitHub Pages.
+     - Make sure your GitHub Pages URL is listed in allowedOrigins inside api/ask.js
+       so that CORS is not blocked.
+     - Example (already included in the template):
+         "https://educadug.github.io",
+         "https://mrguevaracga.github.io"
+     - Students’ browser → GitHub Pages (index.html) → Vercel /api/ask → Gemini 2.5 Flash.
+
+  8. Customising for your thesis
+     - Edit the Biology, Chemistry, and Physics text blocks so they align with your actual
+       research questions, study sites, and variables.
+     - Reword bullet points into student-friendly language that mirrors your abstract,
+       methods, results, and discussion.
+
+  ========= END OF TEACHER-ONLY COMMENT =========
+  -->
+</html>
