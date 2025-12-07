@@ -185,7 +185,8 @@
     <!-- Navigation -->
     <nav class="bg-moss-deep text-white p-4 shadow-lg z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
+            <!-- UPDATED: Added cursor-pointer and onclick to make the logo/title a Home button -->
+            <div class="flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform" onclick="switchTab('home')">
                 <i class="fa-solid fa-tree text-gold-DEFAULT text-2xl animate-bounce"></i>
                 <div>
                     <h1 class="text-xl font-bold font-mono tracking-tighter">ECO-FOREST THESIS</h1>
@@ -200,7 +201,10 @@
                 <button onclick="switchTab('results')" id="btn-results" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Results</button>
                 <button onclick="switchTab('simulator')" id="btn-simulator" class="nav-item px-4 py-2 rounded-lg border-b-4 border-purple-600 bg-purple-900 text-white font-bold shadow-lg">✨ Simulator</button>
                 <button onclick="switchTab('discussion')" id="btn-discussion" class="nav-item px-4 py-2 rounded-lg border-b-4 border-green-900 bg-moss-dark text-white">Discussion</button>
-                <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-item px-4 py-2 rounded-lg border-b-4 border-yellow-600 bg-gold-DEFAULT text-black font-bold"> <i class="fa-solid fa-bolt"></i> Quiz</button>
+                <!-- UPDATED: Enhanced visibility for the Quiz button -->
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-item px-6 py-2 rounded-lg border-b-4 border-yellow-700 bg-gold-DEFAULT text-black font-extrabold shadow-xl hover:scale-110 hover:shadow-yellow-400/50 transition-all ring-2 ring-white/30">
+                    <i class="fa-solid fa-bolt animate-pulse"></i> QUIZ
+                </button>
             </div>
         </div>
     </nav>
@@ -231,7 +235,7 @@
                         </div>
 
                         <div class="flex gap-4">
-                            <!-- CHANGED: Made background darker (moss-deep) for better contrast -->
+                            <!-- High Contrast Button -->
                             <button onclick="switchTab('intro')" class="card-3d bg-moss-deep text-white px-8 py-4 rounded-xl font-bold text-lg w-full md:w-auto hover:bg-moss-dark transition-colors border-2 border-transparent">
                                 Start Exploring <i class="fa-solid fa-arrow-right ml-2"></i>
                             </button>
@@ -253,7 +257,7 @@
                         <p class="text-sm text-gray-700">Using exotic trees as a nursery.</p>
                     </div>
                     
-                    <!-- CHANGED: Made clickable "18 Plots" card -->
+                    <!-- Clickable 18 Plots Card -->
                     <div onclick="openSitesModal()" class="cursor-pointer bg-white text-moss-deep p-6 rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 hover:scale-105 transition duration-300 border-2 border-gray-100 hover:border-moss-DEFAULT group">
                         <i class="fa-solid fa-map-location-dot text-4xl text-moss-DEFAULT mb-2 group-hover:animate-bounce"></i>
                         <h3 class="font-bold text-xl group-hover:underline">18 Plots</h3>
